@@ -58,26 +58,20 @@ else
     exit 1
 fi
 
-# Clone or update the thinOS repository
-log_step 3 "Cloning or updating the thinOS repository..."
-if [ -d "~/thinOS" ]; then
-    cd ~/thinOS
-    git pull
-    cd ~
+# Install or update the thinOS repository in /usr/share
+log_step 3 "Installing or updating thinOS in /usr/share..."
+if [ -d "/usr/share/thinOS/.git" ]; then
+    sudo git -C /usr/share/thinOS pull
 else
-    cd ~
-    git clone https://github.com/LaswitchTech/thinOS.git
+    sudo git clone https://github.com/LaswitchTech/thinOS.git /usr/share/thinOS
 fi
 
-# Clone or update the PyRDPConnect repository
-log_step 4 "Cloning or updating the PyRDPConnect repository..."
-if [ -d "~/PyRDPConnect" ]; then
-    cd ~/PyRDPConnect
-    git pull
-    cd ~
+# Install or update the PyRDPConnect repository in /usr/share
+log_step 4 "Installing or updating the PyRDPConnect repository in /usr/share..."
+if [ -d "/usr/share/PyRDPConnect/.git" ]; then
+    sudo git -C /usr/share/PyRDPConnect pull
 else
-    cd ~
-    git clone https://github.com/LaswitchTech/PyRDPConnect.git
+    sudo git clone https://github.com/LaswitchTech/PyRDPConnect.git /usr/share/PyRDPConnect
 fi
 
 # Create a gradient background image
@@ -86,27 +80,27 @@ mkdir -p ~/backgrounds
 convert -size 1920x1080 gradient:'#265162-#002136' ~/backgrounds/gradient.png
 
 # Configure Openbox
-log_step 6 "Configuring Openbox to start without panels, set the gradient background, and customize the menu..."
-mkdir -p ~/.config/openbox
-if [ ! -d "~/.config/openbox" ] || [ ! -f "~/.config/openbox" ] ; then
-    ln -s ~/thinOS/src/openbox ~/.config/openbox
+log_step 6 "Configuring Openbox..."
+mkdir -p ~/.config
+if [ ! -e ~/.config/openbox ]; then
+    ln -s /usr/share/thinOS/src/openbox ~/.config/openbox
 fi
 
 # Set Openbox to start automatically
 log_step 7 "Setting Openbox to start automatically..."
-if [ ! -d "~/.xinitrc" ] || [ ! -f "~/.xinitrc" ] ; then
-    ln -s ~/thinOS/src/.xinitrc ~/.xinitrc
+if [ ! -e ~/.xinitrc ]; then
+    ln -s /usr/share/thinOS/src/.xinitrc ~/.xinitrc
 fi
 
 # Import Openbox theme
 mkdir -p ~/.themes
-if [ ! -d "~/themes/thinOS" ] || [ ! -f "~/themes/thinOS" ] ; then
-    ln -s ~/thinOS/src/thinOS ~/.themes/thinOS
+if [ ! -e ~/.themes/thinOS ]; then
+    ln -s /usr/share/thinOS/src/thinOS ~/.themes/thinOS
 fi
 
 # Link .Xdefaults for xterm configuration
-if [ ! -d "~/.Xdefaults" ] || [ ! -f "~/.Xdefaults" ] ; then
-    ln -s ~/thinOS/src/.Xdefaults ~/.Xdefaults
+if [ ! -e ~/.Xdefaults ]; then
+    ln -s /usr/share/thinOS/src/.Xdefaults ~/.Xdefaults
 fi
 
 # Set locale and timezone
@@ -142,7 +136,7 @@ log_step 11 "Setting the custom Plymouth theme..."
 if [ -d "/usr/share/plymouth/themes/thinOS" ]; then
     sudo rm -rf /usr/share/plymouth/themes/thinOS
 fi
-sudo cp -r ~/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
+ln -sfn /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
 sudo plymouth-set-default-theme -R thinOS
 sudo update-initramfs -u
 
@@ -187,8 +181,8 @@ fi
 
 log_step 14 "cleanup..."
 # Remove setup script
-if [ -f "~/setup.sh" ]; then
-    rm ~/setup.sh
+if [ -f "$HOME/setup.sh" ]; then
+    rm "$HOME/setup.sh"
 fi
 # Auto remove unused packages
 if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
