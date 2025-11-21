@@ -2,7 +2,7 @@
 <openbox_menu xmlns="http://openbox.org/3.4/menu">
 
     <menu id="root-menu" label="Openbox Menu">
-        <header label="thinOS"/>
+        <separator label="thinOS"/>
 
         <item label="PyRDPConnect">
             <action name="Execute">

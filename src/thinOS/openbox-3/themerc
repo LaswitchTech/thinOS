@@ -9,6 +9,8 @@ menu.border.width: 1
 menu.items.text.color: #cccccc
 menu.items.justify: left
 menu.items.disabled.text.color: #606060
+menu.items.padding.x: 8
+menu.items.padding.y: 4
 
 !! Menu headers
 menu.title.bg: solid flat
