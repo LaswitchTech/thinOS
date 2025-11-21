@@ -29,31 +29,31 @@
         <keepBorder>yes</keepBorder>
         <animateIconify>yes</animateIconify>
         <font place="ActiveWindow">
-            <name>Terminus</name>
+            <name>sans</name>
             <size>12</size>
             <weight>bold</weight>
             <slant>normal</slant>
         </font>
         <font place="InactiveWindow">
-            <name>Terminus</name>
+            <name>sans</name>
             <size>12</size>
             <weight>bold</weight>
             <slant>normal</slant>
         </font>
         <font place="MenuHeader">
-            <name>Terminus</name>
-            <size>9</size>
-            <weight>normal</weight>
+            <name>sans</name>
+            <size>12</size>
+            <weight>bold</weight>
             <slant>normal</slant>
         </font>
         <font place="MenuItem">
-            <name>Terminus</name>
-            <size>9</size>
+            <name>sans</name>
+            <size>12</size>
             <weight>normal</weight>
             <slant>normal</slant>
         </font>
         <font place="OnScreenDisplay">
-            <name>Terminus</name>
+            <name>sans</name>
             <size>9</size>
             <weight>bold</weight>
             <slant>normal</slant>
