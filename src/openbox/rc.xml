@@ -108,18 +108,15 @@
         <screenEdgeWarpTime>400</screenEdgeWarpTime>
         <screenEdgeWarpMouse>false</screenEdgeWarpMouse>
 
-        <!-- Alt + Left drag on window frame to move -->
+        <!-- Window frame (non-titlebar part of decorations) -->
         <context name="Frame">
             <mousebind button="Left" action="Press">
                 <action name="Focus"/>
                 <action name="Raise"/>
             </mousebind>
-            <mousebind button="Right" action="Drag">
-                <action name="Resize"/>
-            </mousebind>
         </context>
 
-        <!-- Titlebar behavior (including double-click maximize) -->
+        <!-- Titlebar: basic move + double-click maximize -->
         <context name="Titlebar">
             <mousebind button="Left" action="Press">
                 <action name="Focus"/>
@@ -127,6 +124,9 @@
             </mousebind>
             <mousebind button="Left" action="Drag">
                 <action name="Move"/>
+            </mousebind>
+            <mousebind button="Left" action="DoubleClick">
+                <action name="ToggleMaximizeFull"/>
             </mousebind>
         </context>
 
@@ -148,6 +148,17 @@
         <context name="Titlebar Iconify">
             <mousebind button="Left" action="Click">
                 <action name="Iconify"/>
+            </mousebind>
+        </context>
+
+        <!-- Window border: drag to resize -->
+        <context name="Border">
+            <mousebind button="Left" action="Press">
+                <action name="Focus"/>
+                <action name="Raise"/>
+            </mousebind>
+            <mousebind button="Left" action="Drag">
+                <action name="Resize"/>
             </mousebind>
         </context>
 
