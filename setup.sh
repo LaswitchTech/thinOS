@@ -87,62 +87,27 @@ convert -size 1920x1080 gradient:'#265162-#002136' ~/backgrounds/gradient.png
 # Configure Openbox
 log_step 5 "Configuring Openbox to start without panels, set the gradient background, and customize the menu..."
 mkdir -p ~/.config/openbox
-
-# Autostart and menu configurations
-cat <<EOL > ~/.config/openbox/autostart
-# Set gradient background
-feh --bg-scale ~/backgrounds/gradient.png &
-# Autostart PyRDPConnect in full-screen mode
-python3 ~/PyRDPConnect/src/PyRDPConnect.py &
-EOL
-
-cat <<EOL > ~/.config/openbox/menu.xml
-<openbox_menu>
-    <menu id="root-menu" label="Openbox Menu">
-        <item label="PyRDPConnect">
-            <action name="Execute">
-                <command>python3 ~/PyRDPConnect/src/PyRDPConnect.py</command>
-            </action>
-        </item>
-        <item label="Terminal">
-            <action name="Execute">
-                <command>xterm</command>
-            </action>
-        </item>
-        <item label="Web Browser">
-            <action name="Execute">
-                <command>firefox</command>
-            </action>
-        </item>
-        <item label="Restart">
-            <action name="Execute">
-                <command>systemctl reboot</command>
-            </action>
-        </item>
-        <item label="Shutdown">
-            <action name="Execute">
-                <command>systemctl poweroff</command>
-            </action>
-        </item>
-    </menu>
-</openbox_menu>
-EOL
+if [ ! -d "~/.config/openbox" ] || [ ! -f "~/.config/openbox" ] ; then
+    ln -s ~/thinOS/src/openbox ~/.config/openbox
+fi
 
 # Set Openbox to start automatically
 log_step 6 "Setting Openbox to start automatically..."
-cat <<EOL > ~/.xinitrc
-exec openbox-session
-EOL
+if [ ! -d "~/.xinitrc" ] || [ ! -f "~/.xinitrc" ] ; then
+    ln -s ~/thinOS/src/.xinitrc ~/.xinitrc
+fi
 
 # Import Openbox theme
 mkdir -p ~/.themes
 if [ ! -d "~/themes/thinOS" ] || [ ! -f "~/themes/thinOS" ] ; then
-    ln -s ~/thinOS/themes/thinOS ~/themes/thinOS
+    ln -s ~/thinOS/src/thinOS ~/.themes/thinOS
 fi
 obconf --set-theme thinOS
 
 # Link .Xdefaults for xterm configuration
-ln -s ~/thinOS/src/.Xdefaults ~/.Xdefaults
+if [ ! -d "~/.Xdefaults" ] || [ ! -f "~/.Xdefaults" ] ; then
+    ln -s ~/thinOS/src/.Xdefaults ~/.Xdefaults
+fi
 
 # Set locale and timezone
 log_step 7 "Setting locale and timezone..."
