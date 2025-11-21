@@ -6,13 +6,13 @@
 
         <item label="Connect">
             <action name="Execute">
-                <command>python3 ~/PyRDPConnect/src/main.py</command>
+                <command>python3 /usr/share/PyRDPConnect/src/main.py</command>
             </action>
         </item>
 
         <item label="PyRDPConnect (LEGACY)">
             <action name="Execute">
-                <command>python3 ~/PyRDPConnect/src/PyRDPConnect.py</command>
+                <command>python3 /usr/share/PyRDPConnect/src/PyRDPConnect.py</command>
             </action>
         </item>
 
