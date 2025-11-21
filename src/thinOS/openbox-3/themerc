@@ -1,20 +1,21 @@
 # Menu
 !! Menu background
-menu.items.bg: flat
-menu.items.bg.color: #383838
 menu.border.color: #2a2a2a
 menu.border.width: 1
+menu.items.bg: flat
+menu.items.bg.color: #383838
+menu.items.border.width: 4
+menu.items.border.color: #383838
 
 !! Menu text
 menu.items.text.color: #cccccc
 menu.items.justify: left
 menu.items.disabled.text.color: #606060
-menu.items.padding.x: 8
-menu.items.padding.y: 4
 
 !! Menu headers
-menu.title.bg: solid flat
-menu.title.bg.color: #383838
+menu.title.bg: border Gradient Vertical
+menu.title.bg.color: #0d6efd
+menu.title.bg.colorTo: #4D4D86
 menu.title.text.color: #f0f0f0
 menu.title.text.justify: center
 
@@ -122,8 +123,7 @@ osd.unhilight.bg.color: #282b28
 border.width: 1
 padding.width: 0
 padding.height: 0
-menu.separator.padding.width: 8
-menu.separator.padding.height: 4
+menu.separator.padding.height: 8
 window.handle.width: 4
 window.client.padding.width: 8
 window.client.padding.height: 4
