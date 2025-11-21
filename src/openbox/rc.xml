@@ -164,7 +164,6 @@
 
             <mousebind button="Right" action="Press">
                 <action name="Focus"/>
-                <action name="ShowMenu"><menu>client-menu</menu></action>
             </mousebind>
         </context>
 
@@ -222,7 +221,6 @@
 
             <mousebind button="Right" action="Press">
                 <action name="Focus"/>
-                <action name="ShowMenu"><menu>client-menu</menu></action>
             </mousebind>
         </context>
 
@@ -289,11 +287,9 @@
         <context name="Icon">
             <mousebind button="Left" action="Press">
                 <action name="Focus"/>
-                <action name="ShowMenu"><menu>client-menu</menu></action>
             </mousebind>
             <mousebind button="Right" action="Press">
                 <action name="Focus"/>
-                <action name="ShowMenu"><menu>client-menu</menu></action>
             </mousebind>
         </context>
 
@@ -377,6 +373,7 @@
         <middle>no</middle>
         <submenuShowDelay>100</submenuShowDelay>
         <submenuHideDelay>400</submenuHideDelay>
+        <showIcons>yes</showIcons>
         <applicationIcons>yes</applicationIcons>
         <manageDesktops>no</manageDesktops>
     </menu>
