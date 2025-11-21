@@ -90,29 +90,19 @@ convert -size 1920x1080 gradient:'#265162-#002136' ~/backgrounds/gradient.png
 log_step 6 "Configuring Openbox..."
 sudo sed -i 's/^#user-session=.*/user-session=openbox/' /etc/lightdm/lightdm.conf
 mkdir -p ~/.config
-if [ ! -e ~/.config/openbox ]; then
-    ln -s /usr/share/thinOS/src/openbox ~/.config/openbox
-fi
+sudo ln -sfn /usr/share/thinOS/src/openbox ~/.config/openbox
 
 # Set Openbox to start automatically
 log_step 7 "Setting Openbox to start automatically..."
-if [ ! -e ~/.xinitrc ]; then
-    ln -s /usr/share/thinOS/src/.xinitrc ~/.xinitrc
-fi
-if [ ! -e ~/.xsession ]; then
-    ln -s /usr/share/thinOS/src/.xinitrc ~/.xsession
-fi
+sudo ln -sfn /usr/share/thinOS/src/.xinitrc ~/.xinitrc
+sudo ln -sfn /usr/share/thinOS/src/.xinitrc ~/.xsession
 
 # Import Openbox theme
 mkdir -p ~/.themes
-if [ ! -e ~/.themes/thinOS ]; then
-    ln -s /usr/share/thinOS/src/thinOS ~/.themes/thinOS
-fi
+sudo ln -sfn /usr/share/thinOS/src/thinOS ~/.themes/thinOS
 
 # Link .Xdefaults for xterm configuration
-if [ ! -e ~/.Xdefaults ]; then
-    ln -s /usr/share/thinOS/src/.Xdefaults ~/.Xdefaults
-fi
+sudo ln -sfn /usr/share/thinOS/src/.Xdefaults ~/.Xdefaults
 
 # Set locale and timezone
 log_step 8 "Setting locale and timezone..."
@@ -143,9 +133,7 @@ fi
 
 # Copy and set custom Plymouth theme
 log_step 11 "Setting the custom Plymouth theme..."
-if [ ! -e ~/usr/share/plymouth/themes/thinOS ]; then
-    sudo ln -sfn /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
-fi
+sudo ln -sfn /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
 sudo plymouth-set-default-theme -R thinOS
 sudo update-initramfs -u
 
