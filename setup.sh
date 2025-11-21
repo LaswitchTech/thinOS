@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Don't run as root – use: ./setup.sh (with sudo inside)
+if [ "$EUID" -eq 0 ]; then
+    echo "Please run this script as a normal user, not as root."
+    echo "It uses sudo internally where needed."
+    exit 1
+fi
+
 # Function to detect the operating system distribution
 get_distribution() {
     if [ "$(cat /proc/cpuinfo | egrep -i "raspberry pi")" != "" ]; then
@@ -49,7 +56,7 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
         freerdp2-x11 \
         python3 \
         python3-pyqt5 \
-        python3-pyqt5.* \
+        python3-pyqt5* \
         wireguard-tools \
         openvpn \
         obconf
@@ -81,6 +88,7 @@ convert -size 1920x1080 gradient:'#265162-#002136' ~/backgrounds/gradient.png
 
 # Configure Openbox
 log_step 6 "Configuring Openbox..."
+sudo sed -i 's/^#user-session=.*/user-session=openbox/' /etc/lightdm/lightdm.conf
 mkdir -p ~/.config
 if [ ! -e ~/.config/openbox ]; then
     ln -s /usr/share/thinOS/src/openbox ~/.config/openbox
@@ -90,6 +98,9 @@ fi
 log_step 7 "Setting Openbox to start automatically..."
 if [ ! -e ~/.xinitrc ]; then
     ln -s /usr/share/thinOS/src/.xinitrc ~/.xinitrc
+fi
+if [ ! -e ~/.xsession ]; then
+    ln -s /usr/share/thinOS/src/.xinitrc ~/.xsession
 fi
 
 # Import Openbox theme
@@ -116,7 +127,7 @@ log_step 9 "Configuring PolicyKit for non-sudo reboot/shutdown..."
 sudo bash -c 'cat <<EOL > /etc/polkit-1/localauthority/50-local.d/10-power-management.pkla
 [Allow Reboot and Shutdown]
 Identity=unix-user:*
-Action=reboot;power-off
+Action=org.freedesktop.login1.reboot;org.freedesktop.login1.power-off
 ResultActive=yes
 EOL'
 
@@ -124,19 +135,17 @@ EOL'
 log_step 10 "Disabling verbose boot and enabling Plymouth theme..."
 if [ -f "/boot/firmware/cmdline.txt" ]; then
     FILE=/boot/firmware/cmdline.txt
-    sudo sed -i 's/console=tty1/console=tty3 splash quiet plymouth.ignore-serial-consoles/' $FILE
-    if ! grep -q "splash quiet" $FILE; then
-      echo "splash quiet" | sudo tee -a $FILE
+    sudo sed -i 's/console=tty1/console=tty3/' "$FILE"
+    if ! grep -q "splash" "$FILE"; then
+        echo "splash quiet plymouth.ignore-serial-consoles" | sudo tee -a "$FILE"
     fi
-    sudo bash -c "echo "disable_splash=1" >> $FILE"
 fi
 
 # Copy and set custom Plymouth theme
 log_step 11 "Setting the custom Plymouth theme..."
-if [ -d "/usr/share/plymouth/themes/thinOS" ]; then
-    sudo rm -rf /usr/share/plymouth/themes/thinOS
+if [ ! -e ~/usr/share/plymouth/themes/thinOS ]; then
+    sudo ln -sfn /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
 fi
-ln -sfn /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
 sudo plymouth-set-default-theme -R thinOS
 sudo update-initramfs -u
 
@@ -163,8 +172,7 @@ if [ "$DISTRO" == "raspbian" ]; then
     # Set up Raspberry Pi to boot into the desktop environment
     sudo raspi-config nonint do_boot_behaviour B4
 
-    if [ "$(echo "./setup --multimon" | grep -- --multimon)" != "" ]; then
-
+    if printf '%s\n' "$@" | grep -q -- --multimon; then
         # Enable HDMI output for both monitors
         sudo bash -c 'cat <<EOL >> /boot/config.txt
 # Enable HDMI output for both monitors
