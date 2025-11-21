@@ -1,8 +1,8 @@
 [Plymouth Theme]
-Name=PyRDPConnect
-Description=A forked breeze plymouth theme with PyRDPConnect logo
+Name=thinOS
+Description=A forked breeze plymouth theme with thinOS logo
 ModuleName=script
 
 [script]
-ImageDir=/usr/share/plymouth/themes/pyrdpconnect
-ScriptFile=/usr/share/plymouth/themes/pyrdpconnect/pyrdpconnect.script
+ImageDir=/usr/share/plymouth/themes/thinOS
+ScriptFile=/usr/share/plymouth/themes/thinOS/thinOS.script
