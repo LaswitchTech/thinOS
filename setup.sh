@@ -27,6 +27,7 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get full-upgrade -y
     sudo apt-get upgrade -y
     sudo apt-get dist-upgrade -y
+    sudo apt full-upgrade -y
 else
     echo "Unsupported distribution: $DISTRO"
     exit 1
@@ -69,7 +70,7 @@ else
 fi
 
 # Clone or update the PyRDPConnect repository
-log_step 3 "Cloning or updating the PyRDPConnect repository..."
+log_step 4 "Cloning or updating the PyRDPConnect repository..."
 if [ -d "~/PyRDPConnect" ]; then
     cd ~/PyRDPConnect
     git pull
@@ -80,19 +81,19 @@ else
 fi
 
 # Create a gradient background image
-log_step 4 "Creating a gradient background image..."
+log_step 5 "Creating a gradient background image..."
 mkdir -p ~/backgrounds
 convert -size 1920x1080 gradient:'#265162-#002136' ~/backgrounds/gradient.png
 
 # Configure Openbox
-log_step 5 "Configuring Openbox to start without panels, set the gradient background, and customize the menu..."
+log_step 6 "Configuring Openbox to start without panels, set the gradient background, and customize the menu..."
 mkdir -p ~/.config/openbox
 if [ ! -d "~/.config/openbox" ] || [ ! -f "~/.config/openbox" ] ; then
     ln -s ~/thinOS/src/openbox ~/.config/openbox
 fi
 
 # Set Openbox to start automatically
-log_step 6 "Setting Openbox to start automatically..."
+log_step 7 "Setting Openbox to start automatically..."
 if [ ! -d "~/.xinitrc" ] || [ ! -f "~/.xinitrc" ] ; then
     ln -s ~/thinOS/src/.xinitrc ~/.xinitrc
 fi
@@ -102,7 +103,6 @@ mkdir -p ~/.themes
 if [ ! -d "~/themes/thinOS" ] || [ ! -f "~/themes/thinOS" ] ; then
     ln -s ~/thinOS/src/thinOS ~/.themes/thinOS
 fi
-obconf --set-theme thinOS
 
 # Link .Xdefaults for xterm configuration
 if [ ! -d "~/.Xdefaults" ] || [ ! -f "~/.Xdefaults" ] ; then
@@ -110,24 +110,24 @@ if [ ! -d "~/.Xdefaults" ] || [ ! -f "~/.Xdefaults" ] ; then
 fi
 
 # Set locale and timezone
-log_step 7 "Setting locale and timezone..."
+log_step 8 "Setting locale and timezone..."
 sudo sed -i '/en_GB.UTF-8/s/^/#/' /etc/locale.gen
 sudo sed -i '/en_CA.UTF-8/s/^# //g' /etc/locale.gen
 sudo locale-gen
 sudo update-locale LANG=en_CA.UTF-8
-sudo timedatectl set-timezone America/Toronto
+sudo timedatectl set-timezone America/Montreal
 
 # Configure PolicyKit for non-sudo reboot and shutdown
-log_step 8 "Configuring PolicyKit for non-sudo reboot/shutdown..."
+log_step 9 "Configuring PolicyKit for non-sudo reboot/shutdown..."
 sudo bash -c 'cat <<EOL > /etc/polkit-1/localauthority/50-local.d/10-power-management.pkla
 [Allow Reboot and Shutdown]
 Identity=unix-user:*
-Action=org.freedesktop.login1.reboot;org.freedesktop.login1.power-off
+Action=reboot;power-off
 ResultActive=yes
 EOL'
 
 # Disable verbose boot and enable Plymouth theme
-log_step 9 "Disabling verbose boot and enabling Plymouth theme..."
+log_step 10 "Disabling verbose boot and enabling Plymouth theme..."
 if [ -f "/boot/firmware/cmdline.txt" ]; then
     FILE=/boot/firmware/cmdline.txt
     sudo sed -i 's/console=tty1/console=tty3 splash quiet plymouth.ignore-serial-consoles/' $FILE
@@ -138,17 +138,17 @@ if [ -f "/boot/firmware/cmdline.txt" ]; then
 fi
 
 # Copy and set custom Plymouth theme
-log_step 10 "Setting the custom Plymouth theme..."
-if [ -d "/usr/share/plymouth/themes/pyrdpconnect" ]; then
-    sudo rm -rf /usr/share/plymouth/themes/pyrdpconnect
+log_step 11 "Setting the custom Plymouth theme..."
+if [ -d "/usr/share/plymouth/themes/thinOS" ]; then
+    sudo rm -rf /usr/share/plymouth/themes/thinOS
 fi
-sudo cp -r ~/PyRDPConnect/src/plymouth /usr/share/plymouth/themes/pyrdpconnect
-sudo plymouth-set-default-theme -R pyrdpconnect
+sudo cp -r ~/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
+sudo plymouth-set-default-theme -R thinOS
 sudo update-initramfs -u
 
 # Enable auto-login for Debian
 if [ "$DISTRO" == "debian" ]; then
-    log_step 11 "Enabling auto-login for Debian..."
+    log_step 12 "Enabling auto-login for Debian..."
     if grep -q "^#autologin-user=" /etc/lightdm/lightdm.conf; then
         sudo sed -i "s/^#autologin-user=.*/autologin-user=$USER/" /etc/lightdm/lightdm.conf
     else
@@ -164,7 +164,7 @@ fi
 
 # Additional Raspberry Pi OS-specific configurations
 if [ "$DISTRO" == "raspbian" ]; then
-    log_step 12 "Configuring Raspberry Pi OS for desktop boot and multi-monitor support..."
+    log_step 13 "Configuring Raspberry Pi OS for desktop boot and multi-monitor support..."
 
     # Set up Raspberry Pi to boot into the desktop environment
     sudo raspi-config nonint do_boot_behaviour B4
@@ -185,5 +185,15 @@ EOL'
     fi
 fi
 
+log_step 14 "cleanup..."
+# Remove setup script
+if [ -f "~/setup.sh" ]; then
+    rm ~/setup.sh
+fi
+# Auto remove unused packages
+if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
+    sudo apt-get autoremove -y
+fi
+
 # Final instructions
-log_step 13 "Setup completed. Please reboot the system to apply the changes."
+log_step 15 "Setup completed. Please reboot the system to apply the changes."
