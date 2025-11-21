@@ -135,9 +135,28 @@ sudo ln -sfn /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
 sudo plymouth-set-default-theme -R thinOS
 sudo update-initramfs -u
 
+# Configure system and Firefox dark mode using repo-based configs
+log_step 12 "Configuring system and Firefox dark mode..."
+
+# System GTK dark mode (source of truth in /usr/share/thinOS/src)
+if [ -f /usr/share/thinOS/src/gtk/settings.ini ]; then
+    mkdir -p ~/.config/gtk-3.0
+    ln -sfn /usr/share/thinOS/src/gtk/settings.ini ~/.config/gtk-3.0/settings.ini
+fi
+
+# Firefox dark mode via user.js (source of truth in /usr/share/thinOS/src)
+if [ -f /usr/share/thinOS/src/firefox/user.js ]; then
+    if [ -d ~/.mozilla/firefox ]; then
+        for FF_PROFILE in ~/.mozilla/firefox/*.default ~/.mozilla/firefox/*.default-esr; do
+            [ -d "$FF_PROFILE" ] || continue
+            ln -sfn /usr/share/thinOS/src/firefox/user.js "$FF_PROFILE/user.js"
+        done
+    fi
+fi
+
 # Enable auto-login for Debian
 if [ "$DISTRO" == "debian" ]; then
-    log_step 12 "Enabling auto-login for Debian..."
+    log_step 13 "Enabling auto-login for Debian..."
     if grep -q "^#autologin-user=" /etc/lightdm/lightdm.conf; then
         sudo sed -i "s/^#autologin-user=.*/autologin-user=$USER/" /etc/lightdm/lightdm.conf
     else
@@ -151,9 +170,10 @@ if [ "$DISTRO" == "debian" ]; then
     fi
 fi
 
+#
 # Additional Raspberry Pi OS-specific configurations
 if [ "$DISTRO" == "raspbian" ]; then
-    log_step 13 "Configuring Raspberry Pi OS for desktop boot and multi-monitor support..."
+    log_step 14 "Configuring Raspberry Pi OS for desktop boot and multi-monitor support..."
 
     # Boot to desktop
     sudo raspi-config nonint do_boot_behaviour B4
@@ -188,7 +208,8 @@ EOL"
     fi
 fi
 
-log_step 14 "cleanup..."
+# Cleanup step
+log_step 15 "cleanup..."
 # Remove setup script
 if [ -f "$HOME/setup.sh" ]; then
     rm "$HOME/setup.sh"
@@ -203,4 +224,4 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
 fi
 
 # Final instructions
-log_step 15 "Setup completed. Please reboot the system to apply the changes."
+log_step 16 "Setup completed. Please reboot the system to apply the changes."

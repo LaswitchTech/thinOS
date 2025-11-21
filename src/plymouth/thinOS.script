@@ -232,13 +232,6 @@ fun StringLength (string) {
     return index;
 }
 
-// String.Length = fun(string) {
-//     index = 0;
-//     while (String(string).CharAt(index))
-//         index++;
-//     return index;
-// };
-
 fun StringCopy (source, beginning, end) {
     local.destination = "";
     for (index = beginning; ( ( (end == NULL) || (index <= end) ) && (String(source).CharAt(index)) ); index++) {
