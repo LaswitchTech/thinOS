@@ -37,4 +37,28 @@
         </item>
     </menu>
 
+    <menu id="client-menu" label="Window">
+        <item label="Move">
+            <action name="Move"/>
+        </item>
+
+        <item label="Resize">
+            <action name="Resize"/>
+        </item>
+
+        <item label="Minimize" icon="shade">
+            <action name="Shade"/>
+        </item>
+
+        <item label="Maximize" icon="maximize">
+            <action name="ToggleMaximizeFull"/>
+        </item>
+
+        <separator/>
+
+        <item label="Close" icon="close">
+            <action name="Close"/>
+        </item>
+    </menu>
+
 </openbox_menu>
