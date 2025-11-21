@@ -4,7 +4,13 @@
     <menu id="root-menu" label="Openbox Menu">
         <separator label="thinOS"/>
 
-        <item label="PyRDPConnect">
+        <item label="Connect">
+            <action name="Execute">
+                <command>python3 ~/PyRDPConnect/src/main.py</command>
+            </action>
+        </item>
+
+        <item label="PyRDPConnect (LEGACY)">
             <action name="Execute">
                 <command>python3 ~/PyRDPConnect/src/PyRDPConnect.py</command>
             </action>
