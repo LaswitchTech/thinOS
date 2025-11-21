@@ -1,0 +1,5 @@
+xterm*background: #2f2f2f
+xterm*foreground: grey
+XTerm.vt100.faceName: Terminus
+XTerm.vt100.faceSize: 12
+XTerm.vt100.dynamicColors: true
