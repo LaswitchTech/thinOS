@@ -108,12 +108,23 @@
         <screenEdgeWarpTime>400</screenEdgeWarpTime>
         <screenEdgeWarpMouse>false</screenEdgeWarpMouse>
 
-        <!-- Titlebar behavior (including double-click maximize) -->
-        <context name="Titlebar">
-            <!-- <mousebind button="Left" action="Press">
+        <!-- Alt + Left drag on window frame to move -->
+        <context name="Frame">
+            <mousebind button="Left" action="Press">
                 <action name="Focus"/>
                 <action name="Raise"/>
-            </mousebind> -->
+            </mousebind>
+            <mousebind button="Right" action="Drag">
+                <action name="Resize"/>
+            </mousebind>
+        </context>
+
+        <!-- Titlebar behavior (including double-click maximize) -->
+        <context name="Titlebar">
+            <mousebind button="Left" action="Press">
+                <action name="Focus"/>
+                <action name="Raise"/>
+            </mousebind>
             <mousebind button="Left" action="Drag">
                 <action name="Move"/>
             </mousebind>
