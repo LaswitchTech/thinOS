@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Prevent running this init more than once per shell session
+if [ -n "$THINOS_INIT_PROFILE_DONE" ]; then
+    # Already initialized in this shell; skip re-running
+    return 2>/dev/null || :
+fi
+export THINOS_INIT_PROFILE_DONE=1
+
 # Clear the screen
 clear
 
@@ -31,17 +38,12 @@ RESET="\[\033[0m\]"
 
 PS1="$BLUE[thinOS]$GREEN \u@\h:\w \$ $RESET"
 
-# Prevent Ctrl+Z (suspend)
-set -o monitor
+# # Prevent Ctrl+Z (suspend)
+# set -o monitor
 
-# Prevent accidental exit
-trap '' 2 3
+# # Prevent accidental exit
+# trap '' 2 3
 
-# Help command
-help() {
-    echo "Available commands:"
-    echo "  netinfo       - Show network details"
-    echo "  cls           - Clear screen"
-    echo "  reboot        - Reboot device"
-    echo "  shutdown      - Power off device"
-}
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
