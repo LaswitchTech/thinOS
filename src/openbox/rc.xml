@@ -108,26 +108,6 @@
         <screenEdgeWarpTime>400</screenEdgeWarpTime>
         <screenEdgeWarpMouse>false</screenEdgeWarpMouse>
 
-        <!-- Alt + Left drag on window frame to move -->
-        <context name="Frame">
-            <mousebind button="A-Left" action="Press">
-                <action name="Focus"/>
-                <action name="Raise"/>
-            </mousebind>
-            <mousebind button="A-Left" action="Drag">
-                <action name="Move"/>
-            </mousebind>
-
-            <!-- Alt + Right drag on window frame to resize -->
-            <mousebind button="A-Right" action="Press">
-                <action name="Focus"/>
-                <action name="Raise"/>
-            </mousebind>
-            <mousebind button="A-Right" action="Drag">
-                <action name="Resize"/>
-            </mousebind>
-        </context>
-
         <!-- Titlebar behavior (including double-click maximize) -->
         <context name="Titlebar">
             <mousebind button="Left" action="Press">
@@ -136,17 +116,6 @@
             </mousebind>
             <mousebind button="Left" action="Drag">
                 <action name="Move"/>
-            </mousebind>
-            <mousebind button="Left" action="DoubleClick">
-                <action name="ToggleMaximizeFull"/>
-            </mousebind>
-            <mousebind button="Middle" action="Click">
-                <action name="Lower"/>
-            </mousebind>
-            <mousebind button="Right" action="Click">
-                <action name="ShowMenu">
-                    <menu>client-menu</menu>
-                </action>
             </mousebind>
         </context>
 
