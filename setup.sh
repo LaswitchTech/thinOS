@@ -193,6 +193,10 @@ log_step 14 "cleanup..."
 if [ -f "$HOME/setup.sh" ]; then
     rm "$HOME/setup.sh"
 fi
+# Remove bash_history
+if [ -f "$HOME/.bash_history" ]; then
+    rm "$HOME/.bash_history"
+fi
 # Auto remove unused packages
 if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get autoremove -y
