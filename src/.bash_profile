@@ -20,11 +20,6 @@ unset HISTFILE
 export HISTSIZE=0
 export HISTFILESIZE=0
 
-# Disable terminal beep only if supported
-if setterm --blength 0 >/dev/null 2>&1; then
-    setterm --blength 0
-fi
-
 # Locale
 export LANG="en_CA.UTF-8"
 export LC_ALL="en_CA.UTF-8"
