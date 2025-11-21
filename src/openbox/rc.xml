@@ -29,34 +29,34 @@
         <keepBorder>yes</keepBorder>
         <animateIconify>yes</animateIconify>
         <font place="ActiveWindow">
-        <name>Terminus</name>
-        <size>12</size>
-        <weight>bold</weight>
-        <slant>normal</slant>
+            <name>Terminus</name>
+            <size>12</size>
+            <weight>bold</weight>
+            <slant>normal</slant>
         </font>
         <font place="InactiveWindow">
-        <name>Terminus</name>
-        <size>12</size>
-        <weight>bold</weight>
-        <slant>normal</slant>
+            <name>Terminus</name>
+            <size>12</size>
+            <weight>bold</weight>
+            <slant>normal</slant>
         </font>
         <font place="MenuHeader">
-        <name>Terminus</name>
-        <size>9</size>
-        <weight>normal</weight>
-        <slant>normal</slant>
+            <name>Terminus</name>
+            <size>9</size>
+            <weight>normal</weight>
+            <slant>normal</slant>
         </font>
         <font place="MenuItem">
-        <name>Terminus</name>
-        <size>9</size>
-        <weight>normal</weight>
-        <slant>normal</slant>
+            <name>Terminus</name>
+            <size>9</size>
+            <weight>normal</weight>
+            <slant>normal</slant>
         </font>
         <font place="OnScreenDisplay">
-        <name>Terminus</name>
-        <size>9</size>
-        <weight>bold</weight>
-        <slant>normal</slant>
+            <name>Terminus</name>
+            <size>9</size>
+            <weight>bold</weight>
+            <slant>normal</slant>
         </font>
     </theme>
 
@@ -64,7 +64,7 @@
         <number>1</number>
         <firstdesk>1</firstdesk>
         <names>
-        <name>thinOS</name>
+            <name>thinOS</name>
         </names>
         <popupTime>0</popupTime>
     </desktops>
@@ -74,8 +74,8 @@
         <popupShow>Nonpixel</popupShow>
         <popupPosition>Center</popupPosition>
         <popupFixedPosition>
-        <x>0</x>
-        <y>0</y>
+            <x>0</x>
+            <y>0</y>
         </popupFixedPosition>
     </resize>
 
@@ -107,7 +107,14 @@
         <doubleClickTime>200</doubleClickTime>
         <screenEdgeWarpTime>400</screenEdgeWarpTime>
         <screenEdgeWarpMouse>false</screenEdgeWarpMouse>
-        <!-- Mouse bindings can be extended later if needed -->
+
+        <context name="Root">
+            <mousebind button="Right" action="Press">
+                <action name="ShowMenu">
+                    <menu>root-menu</menu>
+                </action>
+            </mousebind>
+        </context>
     </mouse>
 
     <menu>
