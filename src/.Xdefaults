@@ -3,3 +3,9 @@ xterm*foreground: grey
 XTerm.vt100.faceName: Terminus
 XTerm.vt100.faceSize: 12
 XTerm.vt100.dynamicColors: true
+
+XTerm*title: terminal
+XTerm*iconName: terminal
+
+XTerm.vt100.titeInhibit: true
+XTerm.vt100.allowTitleOps: false
