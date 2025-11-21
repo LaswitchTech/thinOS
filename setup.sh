@@ -90,17 +90,17 @@ convert -size 1920x1080 gradient:'#265162-#002136' ~/backgrounds/gradient.png
 log_step 6 "Configuring Openbox..."
 sudo sed -i 's/^#user-session=.*/user-session=openbox/' /etc/lightdm/lightdm.conf
 mkdir -p ~/.config
-sudo ln -sfn /usr/share/thinOS/src/openbox ~/.config/openbox
-sudo ln -sfn /usr/share/thinOS/src/.xinitrc ~/.xinitrc
-sudo ln -sfn /usr/share/thinOS/src/.xinitrc ~/.xsession
+ln -sfn /usr/share/thinOS/src/openbox ~/.config/openbox
+ln -sfn /usr/share/thinOS/src/.xinitrc ~/.xinitrc
+ln -sfn /usr/share/thinOS/src/.xinitrc ~/.xsession
 mkdir -p ~/.themes
-sudo ln -sfn /usr/share/thinOS/src/thinOS ~/.themes/thinOS
-sudo ln -sfn /usr/share/thinOS/src/.Xdefaults ~/.Xdefaults
+ln -sfn /usr/share/thinOS/src/thinOS ~/.themes/thinOS
+ln -sfn /usr/share/thinOS/src/.Xdefaults ~/.Xdefaults
 
 # Setup bash profile and aliases
 log_step 7 "Setup bash profile and aliases..."
-sudo ln -sfn /usr/share/thinOS/src/.bash_profile ~/.bash_profile
-sudo ln -sfn /usr/share/thinOS/src/.bash_aliases ~/.bash_aliases
+ln -sfn /usr/share/thinOS/src/.bash_profile ~/.bash_profile
+ln -sfn /usr/share/thinOS/src/.bash_aliases ~/.bash_aliases
 
 # Set locale and timezone
 log_step 8 "Setting locale and timezone..."
