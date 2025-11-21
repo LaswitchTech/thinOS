@@ -70,7 +70,7 @@ log_step 3 "Installing or updating thinOS in /usr/share..."
 if [ -d "/usr/share/thinOS/.git" ]; then
     sudo git -C /usr/share/thinOS pull
 else
-    sudo git clone https://github.com/LaswitchTech/thinOS.git /usr/share/thinOS
+    sudo git clone --branch dev https://github.com/LaswitchTech/thinOS.git /usr/share/thinOS
 fi
 
 # Install or update the PyRDPConnect repository in /usr/share
@@ -78,7 +78,7 @@ log_step 4 "Installing or updating the PyRDPConnect repository in /usr/share..."
 if [ -d "/usr/share/PyRDPConnect/.git" ]; then
     sudo git -C /usr/share/PyRDPConnect pull
 else
-    sudo git clone https://github.com/LaswitchTech/PyRDPConnect.git /usr/share/PyRDPConnect
+    sudo git clone --branch dev https://github.com/LaswitchTech/PyRDPConnect.git /usr/share/PyRDPConnect
 fi
 
 # Create a gradient background image
