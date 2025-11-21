@@ -8,11 +8,3 @@ alias reboot='sudo systemctl reboot'
 alias shutdown='sudo systemctl poweroff'
 alias netinfo='ip -c a && ip r && ping -c 3 8.8.8.8'
 alias ls='ls -l --color=auto'
-
-# Disable history
-unset HISTFILE
-export HISTSIZE=0
-export HISTFILESIZE=0
-
-# No terminal beep
-setterm -blength 0
