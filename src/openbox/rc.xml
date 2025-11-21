@@ -25,7 +25,8 @@
 
     <theme>
         <name>thinOS</name>
-        <titleLayout>NLIMC</titleLayout>
+        <!-- <titleLayout>NLIMC</titleLayout> -->
+        <titleLayout>LSMC</titleLayout>
         <keepBorder>yes</keepBorder>
         <animateIconify>yes</animateIconify>
         <font place="ActiveWindow">
@@ -132,25 +133,6 @@
             <mousebind button="A-Middle" action="Press">
                 <action name="Focus"/>
                 <action name="Lower"/>
-            </mousebind>
-
-            <mousebind button="A-Up" action="Click">
-                <action name="DesktopPrevious"/>
-            </mousebind>
-            <mousebind button="A-Down" action="Click">
-                <action name="DesktopNext"/>
-            </mousebind>
-            <mousebind button="C-A-Up" action="Click">
-                <action name="DesktopPrevious"/>
-            </mousebind>
-            <mousebind button="C-A-Down" action="Click">
-                <action name="DesktopNext"/>
-            </mousebind>
-            <mousebind button="A-S-Up" action="Click">
-                <action name="SendToDesktopPrevious"/>
-            </mousebind>
-            <mousebind button="A-S-Down" action="Click">
-                <action name="SendToDesktopNext"/>
             </mousebind>
         </context>
 
@@ -319,9 +301,6 @@
             <mousebind button="Left" action="Press">
                 <action name="Focus"/>
             </mousebind>
-            <mousebind button="Left" action="Click">
-                <action name="ToggleOmnipresent"/>
-            </mousebind>
         </context>
 
         <context name="Shade">
@@ -373,26 +352,6 @@
         </context>
 
         <context name="Desktop">
-            <mousebind button="Up" action="Press">
-                <action name="DesktopPrevious"/>
-            </mousebind>
-            <mousebind button="Down" action="Press">
-                <action name="DesktopNext"/>
-            </mousebind>
-
-            <mousebind button="A-Up" action="Press">
-                <action name="DesktopPrevious"/>
-            </mousebind>
-            <mousebind button="A-Down" action="Press">
-                <action name="DesktopNext"/>
-            </mousebind>
-            <mousebind button="C-A-Up" action="Press">
-                <action name="DesktopPrevious"/>
-            </mousebind>
-            <mousebind button="C-A-Down" action="Press">
-                <action name="DesktopNext"/>
-            </mousebind>
-
             <mousebind button="Left" action="Press">
                 <action name="Focus"/>
             </mousebind>
@@ -404,25 +363,10 @@
         <context name="Root">
             <!-- Menus -->
             <mousebind button="Middle" action="Press">
-                    <action name="ShowMenu"><menu>client-list-combined-menu</menu></action>
+                <action name="ShowMenu"><menu>client-list-combined-menu</menu></action>
             </mousebind>
             <mousebind button="Right" action="Press">
-                    <action name="ShowMenu"><menu>root-menu</menu></action>
-            </mousebind>
-        </context>
-
-        <context name="MoveResize">
-            <mousebind button="Up" action="Press">
-                    <action name="DesktopPrevious"/>
-            </mousebind>
-            <mousebind button="Down" action="Press">
-                    <action name="DesktopNext"/>
-            </mousebind>
-            <mousebind button="A-Up" action="Press">
-                    <action name="DesktopPrevious"/>
-            </mousebind>
-            <mousebind button="A-Down" action="Press">
-                    <action name="DesktopNext"/>
+                <action name="ShowMenu"><menu>root-menu</menu></action>
             </mousebind>
         </context>
     </mouse>
