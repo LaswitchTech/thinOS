@@ -4,8 +4,9 @@ XTerm.vt100.faceName: Terminus
 XTerm.vt100.faceSize: 12
 XTerm.vt100.dynamicColors: true
 
-XTerm*title: terminal
+XTerm*title: Terminal
 XTerm*iconName: terminal
+XTerm*iconPixmap: ~/.themes/thinOS/openbox-3/terminal.xpm
 
 XTerm.vt100.titeInhibit: true
 XTerm.vt100.allowTitleOps: false
