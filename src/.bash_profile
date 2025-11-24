@@ -12,7 +12,7 @@ clear
 
 # MOTD - Branding banner
 echo "==========================================="
-echo "        LaswitchTech thinOS Terminal        "
+echo "              thinOS Terminal              "
 echo "==========================================="
 echo ""
 echo " Type 'help' for available commands."

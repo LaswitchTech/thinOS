@@ -12,6 +12,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt
 
 from app.helper import Helper
+from app.ui import Form
 from app.configuration import Configuration
 from app.log import Log
 
@@ -54,23 +55,6 @@ class Window(QMainWindow):
 
         # Configuration
         self._configuration: Configuration = configuration
-        # if(self._helper.get_os() == "linux"):
-        #     self._configuration.label("network.wifi", "WiFi")
-        #     self._configuration.add("network.wifi.ssid", None, "text", label="SSID")
-        #     self._configuration.add("network.wifi.passphrase", None, "password")
-        # self._configuration.label("network.wireguard", "WireGuard")
-        # self._configuration.add("network.wireguard.file", None, "text", label="Config File")
-        # self._configuration.add("network.wireguard.auto", False, "checkbox", label="Auto Connect")
-        # self._configuration.add("customize.window.logo_file", None, "picture", label="Logo File")
-        # self._configuration.add("customize.window.logo_position", "top-center", "select", label="Logo Position", choices=["top-left", "top-center", "top-right", "center-left", "center-center", "center-right", "bottom-left", "bottom-center", "bottom-right"])
-        # self._configuration.add("customize.window.form_position", "center-center", "select", label="Form Position", choices=["top-left", "top-center", "top-right", "center-left", "center-center", "center-right", "bottom-left", "bottom-center", "bottom-right"])
-        # self._configuration.add("customize.window.fullscreen", False, "checkbox")
-        # self._configuration.add("customize.window.gradient_start", "#265162", "color", label="Gradient Start")
-        # self._configuration.add("customize.window.gradient_end", "#002136", "color", label="Gradient End")
-        # self._configuration.add("customize.controls.exit", False, "checkbox")
-        # self._configuration.add("customize.controls.restart", False, "checkbox")
-        # self._configuration.add("customize.controls.shutdown", False, "checkbox")
-        # self._configuration.add("customize.controls.diagnostics", False, "checkbox")
 
         # Save any new defaults
         self._configuration.save()
@@ -92,3 +76,19 @@ class Window(QMainWindow):
 
     def exit(self):
         self.close()
+
+    # ------------------------------------------------------------------
+    # UI helpers
+    # ------------------------------------------------------------------
+
+    def init(self):
+
+        # Set window title and icon
+        self.setWindowTitle(self._app.name)
+        icon_path = self._helper.join(self._helper.get_path("icons"),"play-fill.ico")
+        self.setWindowIcon(QIcon(icon_path) if self._helper.file_exists(icon_path) else QIcon())
+        self.setObjectName(self._app.name)
+
+        # Set central widget
+        central = QWidget()
+        self.setCentralWidget(central)
