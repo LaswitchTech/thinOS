@@ -133,7 +133,7 @@ fi
 
 # Copy and set custom Plymouth theme
 log_step 11 "Setting the custom Plymouth theme..."
-# sudo ln -sfn /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
+sudo rm -rf /usr/share/plymouth/themes/thinOS
 sudo cp -rf /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
 sudo plymouth-set-default-theme -R thinOS
 sudo update-initramfs -u
