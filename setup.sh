@@ -31,10 +31,9 @@ log_step() {
 log_step 1 "Updating the Operating System..."
 if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get update
-    sudo apt-get full-upgrade -y
     sudo apt-get upgrade -y
     sudo apt-get dist-upgrade -y
-    sudo apt full-upgrade -y
+    sudo apt-get full-upgrade -y
 else
     echo "Unsupported distribution: $DISTRO"
     exit 1
