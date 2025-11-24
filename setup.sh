@@ -127,13 +127,14 @@ if [ -f "/boot/firmware/cmdline.txt" ]; then
     FILE=/boot/firmware/cmdline.txt
     sudo sed -i 's/console=tty1/console=tty3/' "$FILE"
     if ! grep -q "splash" "$FILE"; then
-        echo "splash quiet plymouth.ignore-serial-consoles" | sudo tee -a "$FILE"
+        echo " splash quiet plymouth.ignore-serial-consoles" | sudo tee -a "$FILE"
     fi
 fi
 
 # Copy and set custom Plymouth theme
 log_step 11 "Setting the custom Plymouth theme..."
-sudo ln -sfn /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
+# sudo ln -sfn /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
+sudo cp -rf /usr/share/thinOS/src/plymouth /usr/share/plymouth/themes/thinOS
 sudo plymouth-set-default-theme -R thinOS
 sudo update-initramfs -u
 
