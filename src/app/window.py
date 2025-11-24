@@ -88,7 +88,3 @@ class Window(QMainWindow):
         icon_path = self._helper.join(self._helper.get_path("icons"),"play-fill.ico")
         self.setWindowIcon(QIcon(icon_path) if self._helper.file_exists(icon_path) else QIcon())
         self.setObjectName(self._app.name)
-
-        # Set central widget
-        central = QWidget()
-        self.setCentralWidget(central)

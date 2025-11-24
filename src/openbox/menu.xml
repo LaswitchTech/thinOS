@@ -24,6 +24,14 @@
 
         <separator/>
 
+        <item label="Configure">
+            <action name="Execute">
+                <command>python3 /usr/share/thinOS/src/main.py</command>
+            </action>
+        </item>
+
+        <separator/>
+
         <item label="Restart">
             <action name="Execute">
                 <command>systemctl reboot</command>
