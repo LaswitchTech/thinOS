@@ -125,7 +125,7 @@ EOL'
 log_step 10 "Disabling verbose boot and enabling Plymouth theme..."
 if [ -f "/boot/firmware/cmdline.txt" ]; then
     FILE=/boot/firmware/cmdline.txt
-    sudo sed -i 's/console=tty1/console=tty3/' "$FILE"
+    # sudo sed -i 's/console=tty1/console=tty3/' "$FILE"
     if ! grep -q "splash" "$FILE"; then
         echo " splash quiet plymouth.ignore-serial-consoles" | sudo tee -a "$FILE"
     fi
