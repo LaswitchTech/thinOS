@@ -4,16 +4,13 @@
 import sys
 
 from app.application import Application
-from app.window import Window
 
 def main():
-    app = Application("thinOS",sys.argv)
+    app = Application("thinOS", sys.argv)
 
-    # Create main window and register it with Application
-    win = Window()
-    app.set_mainWindow(win)
+    # Just show the configuration dialog and nothing else
+    app.configuration.show()
 
-    # All other code gets app via QApplication.instance()
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
