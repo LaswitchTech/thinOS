@@ -13,6 +13,7 @@ alias reboot='systemctl reboot'
 alias shutdown='systemctl poweroff'
 alias ls='ls -l --color=auto'
 alias connect='python3 /usr/share/PyRDPConnect/src/main.py'
+alias configure='python3 /usr/share/thinOS/src/main.py'
 
 # Command to show detailed network information
 netinfo() {
