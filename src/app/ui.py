@@ -19,7 +19,11 @@ from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
 import os
 import base64
 
-from .helper import Helper
+# Allow this module to be used both as part of the 'app' package and as a standalone script
+try:
+    from .helper import Helper
+except ImportError:  # likely running as a top-level script
+    from helper import Helper
 
 class MsgBox(QDialog):
 
