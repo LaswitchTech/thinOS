@@ -163,6 +163,14 @@ class ColorButton(QPushButton):
     def hex(self) -> str:
         return self._color.name()
 
+    def setHex(self, value: str):
+        if not value:
+            return
+        c = QColor(value)
+        if c.isValid():
+            self._color = c
+            self.update()  # repaint
+
     def _styleOption(self):
         option = QStyleOptionButton()
         option.initFrom(self)
@@ -214,6 +222,15 @@ class PictureButton(QPushButton):
         Return the stored base64 string (or "" if none).
         """
         return self._b64
+
+    def setValue(self, raw: str):
+        # Reset visuals first
+        self._b64 = ""
+        self.setIcon(QIcon())
+        self.setText("Select Logo")
+
+        if raw:
+            self._init_from_value(raw)
 
     # ----- internals -----
 
