@@ -15,16 +15,22 @@ def main():
         start = app.configuration.get("customize.gradient_start") or "#265162"
         end = app.configuration.get("customize.gradient_end") or "#002136"
         resolution = app.helper.get_screen_resolution()
-
+        if resolution == (0, 0):
+            resolution_str = "1920x1080"
+        else:
+            resolution_str = f"{resolution[0]}x{resolution[1]}"
         gradient_path = os.path.expanduser("~/.config/thinOS/backgrounds/gradient.png")
 
+        # Create backgrounds directory if it doesn't exist
+        os.makedirs(os.path.dirname(gradient_path), exist_ok=True)
+
         app._run_system_command(
-            ["convert", "-size", resolution, f"gradient:'{start}-{end}'", gradient_path],
+            ["convert", "-size", resolution_str, f"gradient:'{start}-{end}'", gradient_path],
             wait=True,  # we probably want the image finished before setting it
         )
         app._run_system_command(
             ["feh", "--bg-scale", gradient_path],
-            wait=False,  # this one can be async if you like
+            wait=True,  # this one can be async if you like
         )
 
         app._run_system_command(["openbox", "--reconfigure"], wait=False)
