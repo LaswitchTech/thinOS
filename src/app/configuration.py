@@ -15,8 +15,13 @@ from PyQt5.QtWidgets import (
     QLabel, QPushButton, QHBoxLayout, QApplication, QFileDialog
 )
 
-from .helper import Helper
-from .ui import Form
+# Allow this module to be used both as part of the 'app' package and as a standalone script
+try:
+    from .helper import Helper
+    from .ui import Form
+except ImportError:  # likely running as a top-level script
+    from helper import Helper
+    from ui import Form
 
 if TYPE_CHECKING:
     # For type hints only, avoids circular import at runtime
