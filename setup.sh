@@ -50,6 +50,9 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y lightdm || true
     sudo apt-get install -y openbox || true
     sudo apt-get install -y firefox-esr || true
+    sudo apt-get install -y alsa-utils || true
+    sudo apt-get install -y pulseaudio pavucontrol || true
+    sudo apt-get install -y v4l-utils || true
     sudo apt-get install -y xterm || true
     sudo apt-get install -y plymouth || true
     sudo apt-get install -y plymouth-themes || true
@@ -65,6 +68,10 @@ else
     echo "Unsupported distribution: $DISTRO"
     exit 1
 fi
+
+# Ensure the current user is in the correct groups for audio and video devices
+log_step "2a" "Ensuring user has access to audio and video devices..."
+sudo usermod -aG audio,video "$USER" || true
 
 # Install or update the thinOS repository in /usr/share
 log_step 3 "Installing or updating thinOS in /usr/share..."
