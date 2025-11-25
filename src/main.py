@@ -14,7 +14,7 @@ def main():
     app.updating.connect(update)
 
     # Add configuration entries
-    app.configuration.add("customize.window.logo_file", None, "picture", label="Logo File")
+    app.configuration.add("customize.logo_file", None, "picture", label="Logo File")
     app.configuration.add("customize.gradient_start", "#265162", "color", label="Gradient Start")
     app.configuration.add("customize.gradient_end", "#002136", "color", label="Gradient End")
 
