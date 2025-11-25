@@ -57,7 +57,7 @@ class ApplicationDialog(QProgressDialog):
 # Background worker for application update
 # ---------------------------------------------------------------------------
 
-class UpdateWorker(QThread):
+class ApplicationThread(QThread):
 
     finished_with_result = pyqtSignal(int, bool)  # rc, canceled
 
@@ -75,7 +75,7 @@ class UpdateWorker(QThread):
         except Exception as e:
             if self._logger:
                 self._logger.append(
-                    f"[UpdateWorker] Failed to start update process: {e}",
+                    f"[ApplicationThread] Failed to start update process: {e}",
                     channel="system",
                     level="error",
                 )
@@ -107,7 +107,7 @@ class UpdateWorker(QThread):
 
         if self._logger:
             self._logger.append(
-                f"[UpdateWorker] Update command finished ({rc}): sudo git -C {self._repo_root} pull",
+                f"[ApplicationThread] Update command finished ({rc}): sudo git -C {self._repo_root} pull",
                 channel="system",
                 level="info" if rc == 0 else "error",
             )
@@ -362,13 +362,12 @@ class Application(QApplication):
         progress.setLabelText(f"Updating {self.name}...")
 
         # Create worker thread for git pull
-        worker = UpdateWorker(repo_root, logger=self._logger, parent=self)
+        worker = ApplicationThread(repo_root, logger=self._logger, parent=self)
 
         def on_worker_finished(rc: int, canceled: bool) -> None:
-            progress.close()
-
             # If user canceled, do not proceed with post-update tasks
             if canceled:
+                progress.close()
                 MsgBox.show(
                     parent=self._mainWindow,
                     title="Update Canceled",
@@ -382,6 +381,7 @@ class Application(QApplication):
 
             # Non-zero exit → error
             if rc not in (0, None):
+                progress.close()
                 MsgBox.show(
                     parent=self._mainWindow,
                     title="Update Failed",
@@ -393,10 +393,17 @@ class Application(QApplication):
                 )
                 return
 
-            # Emit signal that update has occurred, so external code can do extra tasks
+            # At this point git pull succeeded; keep the dialog open and run post-update tasks
+            progress.setLabelText(f"Applying configuration for {self.name}...")
+            # Process pending events so the label text updates before heavy work
+            self.processEvents()
+
+            # Emit signal that update has occurred, so external code can run post-update tasks
             self.updating.emit()
 
-            # Notify user to restart application
+            # Now close the progress dialog and notify the user
+            progress.close()
+
             buttons: Iterable[str] = ("Exit", "OK")
             choice = MsgBox.show(
                 parent=self._mainWindow,
