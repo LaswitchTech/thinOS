@@ -275,7 +275,7 @@ class Application(QApplication):
         dlg_parent = self._mainWindow if self._mainWindow is not None else None
         progress = ApplicationDialog(parent=dlg_parent)
         progress.setLabelText(f"Updating {self.name}...")
-        progress.setRange(0, 0)  # Busy indicator
+        # progress.setRange(0, 0)  # Busy indicator
 
         cancel_state = {"canceled": False}
 
