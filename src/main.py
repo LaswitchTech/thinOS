@@ -37,6 +37,7 @@ def update():
     end = app.configuration.get("customize.gradient_end") or "#002136"
     resolution = app.helper.get_screen_resolution()
     app.helper.run(["convert", "-size", resolution, f"gradient:'{start}-{end}'", os.path.expanduser("~/.config/thinOS/backgrounds/gradient.png")])
+    app.helper.run(["feh", "--bg-scale", os.path.expanduser("~/.config/thinOS/backgrounds/gradient.png")])
 
     # Update Plymouth theme
     theme_src = app.helper.get_path("plymouth")
