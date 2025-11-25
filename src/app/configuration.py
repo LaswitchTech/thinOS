@@ -228,18 +228,8 @@ class Configuration(QObject):
                 pass
         else:
             # Custom widgets (ColorButton, FileInput, PictureButton, etc.)
-            # Try several common setter patterns so the UI stays in sync.
             if hasattr(w, "setValue") and callable(getattr(w, "setValue")):
                 w.setValue(value)
-            elif hasattr(w, "setText") and callable(getattr(w, "setText")):
-                w.setText("" if value is None else str(value))
-            elif hasattr(w, "setChecked") and callable(getattr(w, "setChecked")):
-                w.setChecked(bool(value))
-            elif hasattr(w, "setCurrentText") and callable(getattr(w, "setCurrentText")):
-                w.setCurrentText("" if value is None else str(value))
-            elif hasattr(w, "setHex") and callable(getattr(w, "setHex")):
-                # For color-like widgets that expose a hex setter
-                w.setHex(value)
 
     def visibility(self, key: str, visible: bool) -> None:
         w = self._widgets.get(key)
