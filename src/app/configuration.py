@@ -12,7 +12,8 @@ from typing import Any, Tuple, Optional, TYPE_CHECKING
 from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QTabWidget, QWidget, QFormLayout,
-    QLabel, QPushButton, QHBoxLayout, QApplication, QFileDialog
+    QLabel, QPushButton, QHBoxLayout, QApplication, QFileDialog,
+    QLineEdit, QComboBox, QCheckBox, QSpinBox
 )
 
 # Allow this module to be used both as part of the 'app' package and as a standalone script
@@ -240,17 +241,24 @@ class Configuration(QObject):
         if lbl is not None:
             lbl.setVisible(visible)
 
-    def reset(self, save: bool = True) -> None:
+    def reset(self, save: bool = False) -> None:
         # Start with a clean configuration dict
         self._data = {}
 
+        # 1) Rebuild data from schema defaults
         for key, meta in self._schema.items():
             default = meta.get("default")
-            # Set the value in the config data
             self.set(key, default)
-            # Update corresponding widget if it exists
-            self.reload(key, default)
 
+        # 2) Push defaults into widgets so the UI reflects the new values
+        for key in self._schema.keys():
+            try:
+                value = self.get(key, _no_fallback=True)
+            except KeyError:
+                continue
+            self.reload(key, value)
+
+        # 3) Optionally persist and notify listeners
         if save:
             self.save()
 
@@ -369,8 +377,9 @@ class Configuration(QObject):
             dlg.reject()
 
         def on_reset():
-            # Reset all values back to their defaults and keep the dialog open
-            self.reset(save=True)
+            # Reset all values back to their defaults and keep the dialog open.
+            # Do not save immediately; let the user confirm with Save.
+            self.reset(save=False)
 
         save_btn.clicked.connect(on_save)
         cancel_btn.clicked.connect(on_cancel)
@@ -416,11 +425,6 @@ class Configuration(QObject):
         return True
 
     def import_from_path(self, path: str) -> bool:
-        """
-        Import configuration from the given file path without any GUI interaction.
-
-        This is primarily intended for CLI usage but can also be used programmatically.
-        """
         try:
             with open(path, "r", encoding="utf-8") as f:
                 imported = json.load(f)
@@ -593,9 +597,6 @@ class Configuration(QObject):
         return s[0].upper() + s[1:]
 
     def _update_from_widgets(self) -> None:
-        from PyQt5.QtWidgets import QLineEdit, QComboBox, QCheckBox, QSpinBox
-        from .ui import Form
-
         for key, widget in self._widgets.items():
             value: Any
 
