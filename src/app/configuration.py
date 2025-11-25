@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import json
 import shutil
+import sys
 from collections import defaultdict
 from typing import Any, Tuple, Optional, TYPE_CHECKING
 
@@ -35,18 +36,20 @@ class Configuration(QObject):
         # Initialize QObject
         super().__init__()
 
-        # Retrieve the application instance
-        self._app: Application = QApplication.instance()
+        # Retrieve the application instance (may be None in CLI usage)
+        self._app: Application | None = QApplication.instance()  # type: ignore[valid-type]
 
-        # Ensure Configuration is created after Application
-        if self._app is None:
-            raise RuntimeError("Configuration must be created after QApplication/Application.")
+        # Ensure we have either an Application or an explicit Helper
+        if self._app is None and helper is None:
+            raise RuntimeError(
+                "Configuration must be created after QApplication/Application or with an explicit Helper."
+            )
 
         # --- auto-wire from QApplication if not provided ---
-        if helper is None:
+        if helper is None and self._app is not None:
             # narrow the type for linters / IDEs
             # no runtime import to avoid circular imports
-            helper = helper or self._app.helper          # type: ignore[attr-defined]
+            helper = self._app.helper          # type: ignore[attr-defined]
 
         # Helper
         self._helper: Helper = helper
@@ -353,6 +356,59 @@ class Configuration(QObject):
     # Import / Export
     # ------------------------------------------------------------------
 
+    def _import_dict(self, imported: dict[str, Any]) -> bool:
+        """
+        Core logic for applying an imported configuration dictionary.
+
+        This is used by both the GUI-based import dialog and the CLI importer.
+        """
+        if not isinstance(imported, dict):
+            print(f"[Configuration] Imported configuration is not a dict: {type(imported)}")
+            return False
+
+        collected_keys: list[str] = []
+
+        def _apply(prefix: str, node: dict[str, Any]) -> None:
+            for key, value in node.items():
+                if isinstance(value, dict):
+                    new_prefix = f"{prefix}.{key}" if prefix else key
+                    _apply(new_prefix, value)
+                else:
+                    full_key = f"{prefix}.{key}" if prefix else key
+                    # Use the existing setter so we don't stomp entire blocks
+                    self.set(full_key, value)
+                    collected_keys.append(full_key)
+
+        _apply("", imported)
+
+        # After applying, reload each key recursively with imported values
+        for full_key in collected_keys:
+            node = imported
+            parts = full_key.split(".")
+            for part in parts[:-1]:
+                node = node.get(part, {})
+            value = node.get(parts[-1], None)
+            self.reload(full_key, value)
+
+        # Persist and notify listeners via save()
+        self.save()
+        return True
+
+    def import_from_path(self, path: str) -> bool:
+        """
+        Import configuration from the given file path without any GUI interaction.
+
+        This is primarily intended for CLI usage but can also be used programmatically.
+        """
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                imported = json.load(f)
+        except Exception as e:
+            print(f"[Configuration] Failed importing configuration from {path}: {e}")
+            return False
+
+        return self._import_dict(imported)
+
     def import_cfg(self, parent: Optional[QWidget] = None) -> bool:
         # Allow this method to be called as a Qt slot callback (clicked(bool)), where parent might be a bool
         if not isinstance(parent, QWidget):
@@ -373,37 +429,7 @@ class Configuration(QObject):
             print(f"[Configuration] Failed importing configuration from {path}: {e}")
             return False
 
-        if not isinstance(imported, dict):
-            print(f"[Configuration] Imported configuration is not a dict: {type(imported)}")
-            return False
-
-        collected_keys = []
-        def _apply(prefix: str, node: dict[str, Any]) -> None:
-            for key, value in node.items():
-                if isinstance(value, dict):
-                    new_prefix = f"{prefix}.{key}" if prefix else key
-                    _apply(new_prefix, value)
-                else:
-                    full_key = f"{prefix}.{key}" if prefix else key
-                    # Use the existing setter so we don't stomp entire blocks
-                    self.set(full_key, value)
-                    collected_keys.append(full_key)
-
-        _apply("", imported)
-
-        # After applying, reload each key recursively with imported values
-        for key in collected_keys:
-            # Traverse imported dict to get the value for the full key
-            node = imported
-            parts = key.split(".")
-            for part in parts[:-1]:
-                node = node.get(part, {})
-            value = node.get(parts[-1], None)
-            self.reload(key, value)
-
-        # Persist and notify listeners via save()
-        self.save()
-        return True
+        return self._import_dict(imported)
 
     def export_cfg(self, parent: Optional[QWidget] = None) -> bool:
         # Allow this method to be called as a Qt slot callback (clicked(bool)), where parent might be a bool
@@ -571,14 +597,6 @@ class Configuration(QObject):
             self.set(key, value)
 
     def _get_config_dir(self) -> str:
-        """
-        Determine the directory where configuration files should be stored.
-
-        On Linux, we follow an XDG-style convention and store configurations
-        under `~/.config/{APP_NAME}` (where APP_NAME is the QApplication name).
-        On other OSes we keep the legacy behavior and use
-        `{self.root_dir}/config`.
-        """
         # Legacy default (macOS, Windows, etc.)
         default_dir = os.path.join(self.root_dir, "config")
 
@@ -606,3 +624,47 @@ class Configuration(QObject):
                     return os.path.join(home, ".config", app_name)
 
         return default_dir
+
+# ------------------------------------------------------------------
+# CLI entrypoint
+# ------------------------------------------------------------------
+
+def _cli_main(argv: list[str] | None = None) -> int:
+    """
+    Simple command-line interface for configuration management.
+
+    Intended usage during installation, e.g.:
+
+        python -m app.configuration --import /path/to/configuration.cfg
+    """
+    if argv is None:
+        argv = sys.argv[1:]
+
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Configuration helper")
+    parser.add_argument(
+        "--import",
+        dest="import_path",
+        metavar="PATH",
+        help="Import configuration from the given file and save it to the default configuration location.",
+    )
+    args = parser.parse_args(argv)
+
+    if not args.import_path:
+        parser.print_help()
+        return 0
+
+    # Instantiate a helper and configuration without requiring a full Application
+    helper = Helper()
+    cfg = Configuration(helper=helper)
+
+    if not os.path.exists(args.import_path):
+        print(f"[Configuration] Config file not found: {args.import_path}", file=sys.stderr)
+        return 1
+
+    ok = cfg.import_from_path(args.import_path)
+    return 0 if ok else 1
+
+if __name__ == "__main__":
+    raise SystemExit(_cli_main())
