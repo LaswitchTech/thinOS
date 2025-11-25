@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import Optional, Iterable
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt, QThread
 from PyQt5.QtWidgets import QProxyStyle, QStyle, QApplication, QProgressDialog, QPushButton
 
 from .helper import Helper
@@ -52,6 +52,67 @@ class ApplicationDialog(QProgressDialog):
     def _on_cancel(self):
         self.canceled_by_user.emit()
         self.reject()
+
+# ---------------------------------------------------------------------------
+# Background worker for application update
+# ---------------------------------------------------------------------------
+
+class UpdateWorker(QThread):
+
+    finished_with_result = pyqtSignal(int, bool)  # rc, canceled
+
+    def __init__(self, repo_root: str, logger: Log | None = None, parent=None):
+        super().__init__(parent)
+        self._repo_root = repo_root
+        self._logger = logger
+
+    def run(self) -> None:
+        rc = -1
+        canceled = False
+
+        try:
+            proc = subprocess.Popen(["sudo", "git", "-C", self._repo_root, "pull"])
+        except Exception as e:
+            if self._logger:
+                self._logger.append(
+                    f"[UpdateWorker] Failed to start update process: {e}",
+                    channel="system",
+                    level="error",
+                )
+            # Emit with rc=-1, not canceled (it never started properly)
+            self.finished_with_result.emit(-1, False)
+            return
+
+        # Poll the process until it finishes or is interrupted
+        import time
+
+        while True:
+            if self.isInterruptionRequested():
+                canceled = True
+                try:
+                    proc.terminate()
+                except Exception:
+                    pass
+                try:
+                    rc = proc.wait()
+                except Exception:
+                    rc = -1
+                break
+
+            rc = proc.poll()
+            if rc is not None:
+                break
+
+            time.sleep(0.05)
+
+        if self._logger:
+            self._logger.append(
+                f"[UpdateWorker] Update command finished ({rc}): sudo git -C {self._repo_root} pull",
+                channel="system",
+                level="info" if rc == 0 else "error",
+            )
+
+        self.finished_with_result.emit(rc if rc is not None else -1, canceled)
 
 # ---------------------------------------------------------------------------
 # Application class
@@ -271,21 +332,6 @@ class Application(QApplication):
             )
             return
 
-        # Create and show the progress dialog so the user sees that the update is in progress
-        dlg_parent = self._mainWindow if self._mainWindow is not None else None
-        progress = ApplicationDialog(parent=dlg_parent)
-        progress.setLabelText(f"Updating {self.name}...")
-        # progress.setRange(0, 0)  # Busy indicator
-
-        cancel_state = {"canceled": False}
-
-        def handle_cancel():
-            cancel_state["canceled"] = True
-
-        progress.canceled_by_user.connect(handle_cancel)
-        progress.show()
-        self.processEvents()
-
         # Only attempt on Linux; ignore silently on other platforms
         try:
             os_name = self._helper.get_os()
@@ -299,7 +345,6 @@ class Application(QApplication):
                     channel="system",
                     level="warning",
                 )
-            progress.close()
             MsgBox.show(
                 parent=self._mainWindow,
                 title="Update Not Available",
@@ -311,93 +356,67 @@ class Application(QApplication):
             )
             return
 
-        # Start the git pull process
-        try:
-            proc = subprocess.Popen(["sudo", "git", "-C", repo_root, "pull"])
-        except Exception as e:
-            if self._logger:
-                self._logger.append(
-                    f"[Application] Failed to start update process: {e}",
-                    channel="system",
-                    level="error",
-                )
+        # Create and show the progress dialog so the user sees that the update is in progress
+        dlg_parent = self._mainWindow if self._mainWindow is not None else None
+        progress = ApplicationDialog(parent=dlg_parent)
+        progress.setLabelText(f"Updating {self.name}...")
+
+        # Create worker thread for git pull
+        worker = UpdateWorker(repo_root, logger=self._logger, parent=self)
+
+        def on_worker_finished(rc: int, canceled: bool) -> None:
             progress.close()
-            MsgBox.show(
+
+            # If user canceled, do not proceed with post-update tasks
+            if canceled:
+                MsgBox.show(
+                    parent=self._mainWindow,
+                    title="Update Canceled",
+                    message="The update was canceled. The application may not be fully up to date.",
+                    icon="warning",
+                    buttons=("OK",),
+                    default="OK",
+                    icon_lookup_fn=self._helper.get_path,
+                )
+                return
+
+            # Non-zero exit → error
+            if rc not in (0, None):
+                MsgBox.show(
+                    parent=self._mainWindow,
+                    title="Update Failed",
+                    message=f"Update failed with exit code {rc}. Check the logs for details.",
+                    icon="error",
+                    buttons=("OK",),
+                    default="OK",
+                    icon_lookup_fn=self._helper.get_path,
+                )
+                return
+
+            # Emit signal that update has occurred, so external code can do extra tasks
+            self.updating.emit()
+
+            # Notify user to restart application
+            buttons: Iterable[str] = ("Exit", "OK")
+            choice = MsgBox.show(
                 parent=self._mainWindow,
-                title="Update Failed",
-                message=f"Failed to start the update process:\n{e}",
-                icon="error",
-                buttons=("OK",),
+                title="Update Successful",
+                message="The application has been updated. Please restart the application to apply the latest changes.",
+                icon="info",
+                buttons=buttons,
                 default="OK",
                 icon_lookup_fn=self._helper.get_path,
             )
-            return
 
-        # Poll the process while keeping the UI responsive and checking for cancel requests
-        rc = None
-        while True:
-            rc = proc.poll()
-            if rc is not None:
-                break
-            if cancel_state["canceled"]:
-                try:
-                    proc.terminate()
-                except Exception:
-                    pass
-                rc = proc.wait()
-                break
-            # Keep the GUI responsive
-            self.processEvents()
+            if choice == "Exit":
+                self.quit()
 
-        if self._logger:
-            self._logger.append(
-                f"[Application] Update command finished ({rc}): sudo git -C {repo_root} pull",
-                channel="system",
-                level="info" if rc == 0 else "error",
-            )
+        def on_user_cancel() -> None:
+            # Request interruption; worker will terminate the process if possible
+            worker.requestInterruption()
 
-        progress.close()
+        progress.canceled_by_user.connect(on_user_cancel)
+        worker.finished_with_result.connect(on_worker_finished)
 
-        # If user canceled, do not proceed with post-update tasks
-        if cancel_state["canceled"]:
-            MsgBox.show(
-                parent=self._mainWindow,
-                title="Update Canceled",
-                message="The update was canceled. The application may not be fully up to date.",
-                icon="warning",
-                buttons=("OK",),
-                default="OK",
-                icon_lookup_fn=self._helper.get_path,
-            )
-            return
-
-        # Non-zero exit → error
-        if rc not in (0, None):
-            MsgBox.show(
-                parent=self._mainWindow,
-                title="Update Failed",
-                message=f"Update failed with exit code {rc}. Check the logs for details.",
-                icon="error",
-                buttons=("OK",),
-                default="OK",
-                icon_lookup_fn=self._helper.get_path,
-            )
-            return
-
-        # Emit signal that update has occurred, so external code can do extra tasks
-        self.updating.emit()
-
-        # Notify user to restart application
-        buttons: Iterable[str] = ("Exit", "OK")
-        choice = MsgBox.show(
-            parent=self._mainWindow,
-            title="Update Successful",
-            message="The application has been updated. Please restart the application to apply the latest changes.",
-            icon="info",
-            buttons=buttons,
-            default="OK",
-            icon_lookup_fn=self._helper.get_path,
-        )
-
-        if choice == "Exit":
-            self.quit()
+        progress.show()
+        worker.start()
