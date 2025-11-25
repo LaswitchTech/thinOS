@@ -240,6 +240,28 @@ class Configuration(QObject):
         if lbl is not None:
             lbl.setVisible(visible)
 
+    def reset_to_defaults(self, save: bool = True) -> None:
+        """
+        Reset all configuration values to their schema defaults.
+
+        This will:
+        - Rebuild the internal _data dict using only keys defined in the schema.
+        - Push the default values back into any existing UI widgets.
+        - Optionally save the configuration (and emit configChanged).
+        """
+        # Start with a clean configuration dict
+        self._data = {}
+
+        for key, meta in self._schema.items():
+            default = meta.get("default")
+            # Set the value in the config data
+            self.set(key, default)
+            # Update corresponding widget if it exists
+            self.reload(key, default)
+
+        if save:
+            self.save()
+
     # ------------------------------------------------------------------
     # Convenience properties
     # ------------------------------------------------------------------
@@ -334,11 +356,13 @@ class Configuration(QObject):
 
             tabs.addTab(cat_widget, self.label(category))
 
-        # Buttons row (Save / Cancel)
+        # Buttons row (Reset / Cancel / Save)
         btn_row = QHBoxLayout()
         btn_row.addStretch(1)
+        reset_btn = QPushButton("Reset")
         save_btn = QPushButton("Save")
         cancel_btn = QPushButton("Cancel")
+        btn_row.addWidget(reset_btn)
         btn_row.addWidget(cancel_btn)
         btn_row.addWidget(save_btn)
         root.addLayout(btn_row)
@@ -352,8 +376,13 @@ class Configuration(QObject):
         def on_cancel():
             dlg.reject()
 
+        def on_reset():
+            # Reset all values back to their defaults and keep the dialog open
+            self.reset_to_defaults(save=True)
+
         save_btn.clicked.connect(on_save)
         cancel_btn.clicked.connect(on_cancel)
+        reset_btn.clicked.connect(on_reset)
 
         dlg.exec_()
 
