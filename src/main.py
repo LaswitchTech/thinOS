@@ -19,11 +19,11 @@ def main():
         start = app.configuration.get("customize.gradient_start") or "#265162"
         end = app.configuration.get("customize.gradient_end") or "#002136"
         resolution = app.helper.get_screen_resolution()
-        app.helper.run(["convert", "-size", resolution, f"gradient:'{start}-{end}'", os.path.expanduser("~/.config/thinOS/backgrounds/gradient.png")])
-        app.helper.run(["feh", "--bg-scale", os.path.expanduser("~/.config/thinOS/backgrounds/gradient.png")])
+        app._run_system_command(["convert", "-size", resolution, f"gradient:'{start}-{end}'", os.path.expanduser("~/.config/thinOS/backgrounds/gradient.png")])
+        app._run_system_command(["feh", "--bg-scale", os.path.expanduser("~/.config/thinOS/backgrounds/gradient.png")])
 
         # Reload the Openbox theme
-        app.helper.run(["openbox --reconfigure"])
+        app._run_system_command(["openbox --reconfigure"])
 
     def update():
 
@@ -33,10 +33,10 @@ def main():
         # Update Plymouth theme
         theme_src = app.helper.get_path("plymouth")
         theme_dst = "/usr/share/plymouth/themes/thinOS"
-        app.helper.run(["sudo", "rm", "-rf", theme_dst])
-        app.helper.run(["sudo", "cp", "-rf", theme_src, theme_dst])
-        app.helper.run(["sudo", "plymouth-set-default-theme", "-R", "thinOS"])
-        app.helper.run(["sudo", "update-initramfs", "-u"])
+        app._run_system_command(["sudo", "rm", "-rf", theme_dst])
+        app._run_system_command(["sudo", "cp", "-rf", theme_src, theme_dst])
+        app._run_system_command(["sudo", "plymouth-set-default-theme", "-R", "thinOS"])
+        app._run_system_command(["sudo", "update-initramfs", "-u"])
 
     # Connect to update signal
     app.updating.connect(update)
