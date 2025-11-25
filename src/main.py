@@ -25,7 +25,7 @@ def main():
         os.makedirs(os.path.dirname(gradient_path), exist_ok=True)
 
         app._run_system_command(
-            ["convert", "-size", resolution_str, f"gradient:'{start}-{end}'", gradient_path],
+            ["convert", "-size", resolution_str, f"gradient:{start}-{end}", gradient_path],
             wait=True,  # we probably want the image finished before setting it
         )
         app._run_system_command(
