@@ -212,8 +212,6 @@ class Configuration(QObject):
         if w is None:
             return
 
-        from PyQt5.QtWidgets import QLineEdit, QComboBox, QCheckBox, QSpinBox
-
         if isinstance(w, QLineEdit):
             w.setText(str(value) if value is not None else "")
         elif isinstance(w, QComboBox):
@@ -229,7 +227,11 @@ class Configuration(QObject):
                 pass
         else:
             # Custom widgets (ColorButton, FileInput, PictureButton, etc.)
-            if hasattr(w, "setValue") and callable(getattr(w, "setValue")):
+            # Prefer a color-specific API if available, then fall back to a generic setter.
+            if hasattr(w, "setHex") and callable(getattr(w, "setHex")):
+                # Color button / color-like widget
+                w.setHex(value)
+            elif hasattr(w, "setValue") and callable(getattr(w, "setValue")):
                 w.setValue(value)
 
     def visibility(self, key: str, visible: bool) -> None:
