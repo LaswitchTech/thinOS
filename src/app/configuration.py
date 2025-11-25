@@ -362,11 +362,6 @@ class Configuration(QObject):
     # ------------------------------------------------------------------
 
     def _import_dict(self, imported: dict[str, Any]) -> bool:
-        """
-        Core logic for applying an imported configuration dictionary.
-
-        This is used by both the GUI-based import dialog and the CLI importer.
-        """
         if not isinstance(imported, dict):
             print(f"[Configuration] Imported configuration is not a dict: {type(imported)}")
             return False
@@ -614,14 +609,24 @@ class Configuration(QObject):
         # Only change behavior on Linux and when we have an application name
         if os_name == "linux":
             app_name = ""
-            try:
-                # Prefer the Application.name property if available
-                if hasattr(self._app, "name"):
-                    app_name = self._app.name  # type: ignore[attr-defined]
-                else:
-                    app_name = self._app.applicationName()
-            except Exception:
-                app_name = ""
+
+            # If we have an Application instance, try to use its name
+            if self._app is not None:
+                try:
+                    # Prefer the Application.name property if available
+                    if hasattr(self._app, "name"):
+                        app_name = self._app.name  # type: ignore[attr-defined]
+                    else:
+                        app_name = self._app.applicationName()
+                except Exception:
+                    app_name = ""
+
+            # In CLI usage there may be no Application; fall back to the root_dir name
+            if not app_name:
+                try:
+                    app_name = os.path.basename(self.root_dir) or ""
+                except Exception:
+                    app_name = ""
 
             if app_name:
                 home = os.path.expanduser("~")
@@ -635,13 +640,6 @@ class Configuration(QObject):
 # ------------------------------------------------------------------
 
 def _cli_main(argv: list[str] | None = None) -> int:
-    """
-    Simple command-line interface for configuration management.
-
-    Intended usage during installation, e.g.:
-
-        python -m app.configuration --import /path/to/configuration.cfg
-    """
     if argv is None:
         argv = sys.argv[1:]
 
