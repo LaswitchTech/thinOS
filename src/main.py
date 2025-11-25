@@ -33,20 +33,56 @@ def main():
             wait=True,  # this one can be async if you like
         )
 
-        app._run_system_command(["openbox", "--reconfigure"], wait=False)
+    def update(do):
+        start = app.configuration.get("customize.gradient_start") or "#265162"
+        end = app.configuration.get("customize.gradient_end") or "#002136"
+        resolution = app.helper.get_screen_resolution()
+        if resolution == (0, 0):
+            resolution_str = "1920x1080"
+        else:
+            resolution_str = f"{resolution[0]}x{resolution[1]}"
 
-    def update():
-        # 1) Reload gradient + openbox
-        reload()
+        gradient_path = os.path.expanduser("~/.config/thinOS/backgrounds/gradient.png")
+        os.makedirs(os.path.dirname(gradient_path), exist_ok=True)
 
-        # 2) Update Plymouth theme
+        # 1) gradient
+        do(
+            ["convert", "-size", resolution_str, f"gradient:{start}-{end}", gradient_path],
+            f"Generating background ({resolution_str})…",
+        )
+
+        # 2) wallpaper
+        do(
+            ["feh", "--bg-scale", gradient_path],
+            "Applying desktop background…",
+        )
+
+        # 3) openbox
+        do(
+            ["openbox", "--reconfigure"],
+            "Reloading window manager…",
+        )
+
+        # 4) Plymouth theme
         theme_src = app.helper.get_path("plymouth")
         theme_dst = "/usr/share/plymouth/themes/thinOS"
 
-        app._run_system_command(["sudo", "rm", "-rf", theme_dst], wait=True)
-        app._run_system_command(["sudo", "cp", "-rf", theme_src, theme_dst], wait=True)
-        app._run_system_command(["sudo", "plymouth-set-default-theme", "-R", "thinOS"], wait=True)
-        app._run_system_command(["sudo", "update-initramfs", "-u"], wait=True)
+        do(
+            ["sudo", "rm", "-rf", theme_dst],
+            "Removing old Plymouth theme…",
+        )
+        do(
+            ["sudo", "cp", "-rf", theme_src, theme_dst],
+            "Installing new Plymouth theme…",
+        )
+        do(
+            ["sudo", "plymouth-set-default-theme", "-R", "thinOS"],
+            "Setting default Plymouth theme…",
+        )
+        do(
+            ["sudo", "update-initramfs", "-u"],
+            "Rebuilding initramfs…",
+        )
 
     # Connect to update signal
     app.updating.connect(update)

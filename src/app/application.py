@@ -59,68 +59,105 @@ class ApplicationDialog(QProgressDialog):
 
 class ApplicationThread(QThread):
 
-    finished_with_result = pyqtSignal(int, bool)  # rc, canceled
+    finished_with_result = pyqtSignal(int, bool)   # rc, canceled
+    progress_text = pyqtSignal(str)               # label to show in dialog
 
-    def __init__(self, repo_root: str, logger: Log | None = None, parent=None):
+    def __init__(
+        self,
+        repo_root: str,
+        tasks: list[tuple[list[str], str | None]] | None = None,
+        logger: Log | None = None,
+        parent=None,
+    ):
         super().__init__(parent)
         self._repo_root = repo_root
+        self._tasks = tasks or []
         self._logger = logger
 
     def run(self) -> None:
+        import time
+
         rc = -1
         canceled = False
 
-        try:
-            proc = subprocess.Popen(["sudo", "git", "-C", self._repo_root, "pull"])
-        except Exception as e:
-            if self._logger:
-                self._logger.append(
-                    f"[ApplicationThread] Failed to start update process: {e}",
-                    channel="system",
-                    level="error",
-                )
-            # Emit with rc=-1, not canceled (it never started properly)
-            self.finished_with_result.emit(-1, False)
-            return
+        def run_command(args: list[str]) -> int:
+            nonlocal canceled
+            try:
+                proc = subprocess.Popen(args)
+            except Exception as e:
+                if self._logger:
+                    self._logger.append(
+                        f"[ApplicationThread] Failed to start command {args!r}: {e}",
+                        channel="system",
+                        level="error",
+                    )
+                return -1
 
-        # Poll the process until it finishes or is interrupted
-        import time
+            while True:
+                if self.isInterruptionRequested():
+                    canceled = True
+                    try:
+                        proc.terminate()
+                    except Exception:
+                        pass
+                    try:
+                        return proc.wait()
+                    except Exception:
+                        return -1
 
-        while True:
-            if self.isInterruptionRequested():
-                canceled = True
-                try:
-                    proc.terminate()
-                except Exception:
-                    pass
-                try:
-                    rc = proc.wait()
-                except Exception:
-                    rc = -1
-                break
+                r = proc.poll()
+                if r is not None:
+                    return r
 
-            rc = proc.poll()
-            if rc is not None:
-                break
+                time.sleep(0.05)
 
-            time.sleep(0.05)
+        # ---- 1) git pull ---------------------------------------------------
+        if self._logger:
+            self._logger.append(
+                f"[ApplicationThread] Starting git pull in {self._repo_root}",
+                channel="system",
+                level="info",
+            )
+
+        self.progress_text.emit("Updating application files...")
+        rc = run_command(["sudo", "git", "-C", self._repo_root, "pull"])
 
         if self._logger:
             self._logger.append(
-                f"[ApplicationThread] Update command finished ({rc}): sudo git -C {self._repo_root} pull",
+                f"[ApplicationThread] git pull finished ({rc})",
                 channel="system",
                 level="info" if rc == 0 else "error",
             )
 
-        self.finished_with_result.emit(rc if rc is not None else -1, canceled)
+        if rc != 0 or canceled:
+            self.finished_with_result.emit(rc if rc is not None else -1, canceled)
+            return
 
+        # ---- 2) Post-update tasks -----------------------------------------
+        for args, label in self._tasks:
+            if label:
+                self.progress_text.emit(label)
+
+            rc = run_command(args)
+
+            if self._logger:
+                self._logger.append(
+                    f"[ApplicationThread] Command finished ({rc}): {' '.join(args)}",
+                    channel="system",
+                    level="info" if rc == 0 else "error",
+                )
+
+            if rc != 0 or canceled:
+                break
+
+        self.finished_with_result.emit(rc if rc is not None else -1, canceled)
 # ---------------------------------------------------------------------------
 # Application class
 # ---------------------------------------------------------------------------
 
 class Application(QApplication):
 
-    updating = pyqtSignal()
+    updating = pyqtSignal(object)
 
     def __init__(self, name: Optional[str] = None, argv=None):
 
@@ -310,7 +347,7 @@ class Application(QApplication):
     # ------------------------------------------------------------------
 
     def update(self):
-        # Determine repo root based on this file location
+        # Determine repo root
         try:
             here = os.path.abspath(os.path.dirname(__file__))
             repo_root = os.path.abspath(os.path.join(here, "..", ".."))
@@ -332,7 +369,7 @@ class Application(QApplication):
             )
             return
 
-        # Only attempt on Linux; ignore silently on other platforms
+        # Only attempt on Linux
         try:
             os_name = self._helper.get_os()
         except Exception:
@@ -356,18 +393,30 @@ class Application(QApplication):
             )
             return
 
-        # Create and show the progress dialog so the user sees that the update is in progress
+        # --- Build post-update task list via listener -------------------------
+        tasks: list[tuple[list[str], str | None]] = []
+
+        def add_task(args: list[str], label: str | None = None) -> None:
+            tasks.append((args, label))
+
+        # Let external code (main.py) register tasks.
+        # Those tasks *will* run after git pull in ApplicationThread.
+        self.updating.emit(add_task)
+
+        # --- Create dialog + worker ------------------------------------------
         dlg_parent = self._mainWindow if self._mainWindow is not None else None
         progress = ApplicationDialog(parent=dlg_parent)
         progress.setLabelText(f"Updating {self.name}...")
 
-        # Create worker thread for git pull
-        worker = ApplicationThread(repo_root, logger=self._logger, parent=self)
+        worker = ApplicationThread(repo_root, tasks=tasks, logger=self._logger, parent=self)
+
+        # Update label whenever the worker reports a progress text
+        worker.progress_text.connect(progress.setLabelText)
 
         def on_worker_finished(rc: int, canceled: bool) -> None:
-            # If user canceled, do not proceed with post-update tasks
+            progress.close()
+
             if canceled:
-                progress.close()
                 MsgBox.show(
                     parent=self._mainWindow,
                     title="Update Canceled",
@@ -379,9 +428,7 @@ class Application(QApplication):
                 )
                 return
 
-            # Non-zero exit → error
             if rc not in (0, None):
-                progress.close()
                 MsgBox.show(
                     parent=self._mainWindow,
                     title="Update Failed",
@@ -393,17 +440,7 @@ class Application(QApplication):
                 )
                 return
 
-            # At this point git pull succeeded; keep the dialog open and run post-update tasks
-            progress.setLabelText(f"Applying configuration for {self.name}...")
-            # Process pending events so the label text updates before heavy work
-            self.processEvents()
-
-            # Emit signal that update has occurred, so external code can run post-update tasks
-            self.updating.emit()
-
-            # Now close the progress dialog and notify the user
-            progress.close()
-
+            # Everything (git + tasks) succeeded
             buttons: Iterable[str] = ("Exit", "OK")
             choice = MsgBox.show(
                 parent=self._mainWindow,
@@ -414,12 +451,10 @@ class Application(QApplication):
                 default="OK",
                 icon_lookup_fn=self._helper.get_path,
             )
-
             if choice == "Exit":
                 self.quit()
 
         def on_user_cancel() -> None:
-            # Request interruption; worker will terminate the process if possible
             worker.requestInterruption()
 
         progress.canceled_by_user.connect(on_user_cancel)
