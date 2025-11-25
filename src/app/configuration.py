@@ -228,8 +228,18 @@ class Configuration(QObject):
                 pass
         else:
             # Custom widgets (ColorButton, FileInput, PictureButton, etc.)
+            # Try several common setter patterns so the UI stays in sync.
             if hasattr(w, "setValue") and callable(getattr(w, "setValue")):
                 w.setValue(value)
+            elif hasattr(w, "setText") and callable(getattr(w, "setText")):
+                w.setText("" if value is None else str(value))
+            elif hasattr(w, "setChecked") and callable(getattr(w, "setChecked")):
+                w.setChecked(bool(value))
+            elif hasattr(w, "setCurrentText") and callable(getattr(w, "setCurrentText")):
+                w.setCurrentText("" if value is None else str(value))
+            elif hasattr(w, "setHex") and callable(getattr(w, "setHex")):
+                # For color-like widgets that expose a hex setter
+                w.setHex(value)
 
     def visibility(self, key: str, visible: bool) -> None:
         w = self._widgets.get(key)
@@ -240,15 +250,7 @@ class Configuration(QObject):
         if lbl is not None:
             lbl.setVisible(visible)
 
-    def reset_to_defaults(self, save: bool = True) -> None:
-        """
-        Reset all configuration values to their schema defaults.
-
-        This will:
-        - Rebuild the internal _data dict using only keys defined in the schema.
-        - Push the default values back into any existing UI widgets.
-        - Optionally save the configuration (and emit configChanged).
-        """
+    def reset(self, save: bool = True) -> None:
         # Start with a clean configuration dict
         self._data = {}
 
@@ -378,7 +380,7 @@ class Configuration(QObject):
 
         def on_reset():
             # Reset all values back to their defaults and keep the dialog open
-            self.reset_to_defaults(save=True)
+            self.reset(save=True)
 
         save_btn.clicked.connect(on_save)
         cancel_btn.clicked.connect(on_cancel)
