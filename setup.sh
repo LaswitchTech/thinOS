@@ -61,8 +61,8 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y plymouth || true
     sudo apt-get install -y plymouth-themes || true
     sudo apt-get install -y imagemagick feh || true
-    sudo apt-get install -y freerdp2-x11 || true
-    sudo apt-get install -y freerdp3-x11 || true
+    # sudo apt-get install -y freerdp2-x11 || true
+    # sudo apt-get install -y freerdp3-x11 || true
     sudo apt-get install -y liburiparser1 || true
     sudo apt-get install -y libcjson1 || true
     sudo apt-get install -y openvpn || true
