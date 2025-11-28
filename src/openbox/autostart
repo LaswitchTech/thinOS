@@ -2,3 +2,5 @@
 feh --bg-scale ~/.config/thinOS/backgrounds/gradient.png &
 # Autostart PyRDPConnect in full-screen mode
 python3 /usr/share/PyRDPConnect/src/main.py &
+# Start devmon for automount (with notifications)
+( sleep 2 && /usr/local/bin/thinos-devmon ) &

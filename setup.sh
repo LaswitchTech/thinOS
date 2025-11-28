@@ -49,6 +49,10 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y dnsutils || true
     sudo apt-get install -y lightdm || true
     sudo apt-get install -y openbox || true
+    sudo apt-get install -y udevil || true
+    sudo apt-get install -y libnotify-bin || true
+    sudo apt-get install -y exfatprogs || true
+    sudo apt-get install -y ntfs-3g || true
     sudo apt-get install -y firefox-esr || true
     sudo apt-get install -y alsa-utils || true
     sudo apt-get install -y pulseaudio pavucontrol || true
@@ -82,6 +86,26 @@ if [ -d "/usr/share/thinOS/.git" ]; then
 else
     sudo git clone --branch dev https://github.com/LaswitchTech/thinOS.git /usr/share/thinOS
 fi
+
+# Configure uDevil to allow non-sudo mounting of USB drives
+log_step "3a" "Configuring uDevil for non-sudo USB mounting..."
+
+# Ensure dirs exist
+sudo mkdir -p /etc/udevil
+sudo mkdir -p /usr/local/bin
+
+# Symlink configs & helper
+sudo ln -sfn /usr/share/thinOS/src/etc/udevil/udevil.conf /etc/udevil/udevil.conf
+sudo ln -sfn /usr/share/thinOS/src/usr/local/bin/thinos-devmon /usr/local/bin/thinos-devmon
+sudo chmod +x /usr/local/bin/thinos-devmon || true
+
+# Add user to plugdev group
+sudo usermod -aG plugdev "$USER" || true
+
+# # Systemd service
+# sudo ln -sfn /usr/share/thinOS/src/etc/systemd/system/devmon.service /etc/systemd/system/devmon.service
+# sudo systemctl daemon-reload
+# sudo systemctl enable --now devmon.service
 
 # Install or update the PyRDPConnect repository in /usr/share
 log_step 4 "Installing or updating the PyRDPConnect repository in /usr/share..."
@@ -118,7 +142,7 @@ sudo sed -i '/en_GB.UTF-8/s/^/#/' /etc/locale.gen
 sudo sed -i '/en_CA.UTF-8/s/^# //g' /etc/locale.gen
 sudo locale-gen
 sudo update-locale LANG=en_CA.UTF-8
-sudo timedatectl set-timezone America/Montreal
+sudo timedatectl set-timezone America/Toronto
 
 # Configure PolicyKit for non-sudo reboot and shutdown
 log_step 9 "Configuring PolicyKit for non-sudo reboot/shutdown..."
@@ -131,11 +155,10 @@ EOL'
 
 # Disable verbose boot and enable Plymouth theme
 log_step 10 "Disabling verbose boot and enabling Plymouth theme..."
-if [ -f "/boot/firmware/cmdline.txt" ]; then
-    FILE=/boot/firmware/cmdline.txt
-    # sudo sed -i 's/console=tty1/console=tty3/' "$FILE"
+FILE=/boot/firmware/cmdline.txt
+if [ -f "$FILE" ]; then
     if ! grep -q "splash" "$FILE"; then
-        echo " splash quiet plymouth.ignore-serial-consoles" | sudo tee -a "$FILE"
+        sudo sed -i 's/$/ splash quiet plymouth.ignore-serial-consoles/' "$FILE"
     fi
 fi
 
