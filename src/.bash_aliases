@@ -1,5 +1,40 @@
 #!/bin/bash
 
+# OS/architecture detection
+UNAME_OS="$(uname -s)"
+case "$UNAME_OS" in
+    Linux)
+        OS="linux"
+        ;;
+    Darwin)
+        OS="macos"
+        ;;
+    *)
+        echo "Unsupported OS: $UNAME_OS" >&2
+        exit 1
+        ;;
+esac
+
+ARCH="$(uname -m)"
+case "$ARCH" in
+    i386|i686|x86|i86pc)
+        ARCH="x86_64"
+        ;;
+    amd64|x86_64)
+        ARCH="x86_64"
+        ;;
+    armv6l|armv7l|armhf)
+        ARCH="armhf"
+        ;;
+    aarch64|arm64)
+        ARCH="arm64"
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH" >&2
+        exit 1
+        ;;
+esac
+
 # Prevent running this init more than once per shell session
 if [ -n "$THINOS_INIT_ALIASES_DONE" ]; then
     # Already initialized in this shell; skip re-running
@@ -14,6 +49,12 @@ alias shutdown='systemctl poweroff'
 alias ls='ls -l --color=auto'
 alias connect='python3 /usr/share/PyRDPConnect/src/main.py'
 alias configure='python3 /usr/share/thinOS/src/main.py'
+
+# Set FreeRDP library paths
+export LD_LIBRARY_PATH="/usr/share/PyRDPConnect/src/bin/freerdp/${OS}/${ARCH}/lib"
+export FREERDP_PLUGIN_PATH="/usr/share/PyRDPConnect/src/bin/freerdp/${OS}/${ARCH}/plugins"
+# xfreerdp with recommended options
+alias xfreerdp="/usr/share/PyRDPConnect/src/bin/freerdp/${OS}/${ARCH}/xfreerdp"
 
 # Command to show detailed network information
 netinfo() {
