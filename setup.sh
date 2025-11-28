@@ -53,6 +53,8 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y libnotify-bin || true
     sudo apt-get install -y exfatprogs || true
     sudo apt-get install -y ntfs-3g || true
+    sudo apt-get install -y exfat-fuse || true
+    sudo apt-get install -y exfatprogs || true
     sudo apt-get install -y firefox-esr || true
     sudo apt-get install -y alsa-utils || true
     sudo apt-get install -y pulseaudio pavucontrol || true
