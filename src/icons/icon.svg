@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 200 200">
+  <defs>
+        <!-- Background gradient (adjust stops to match your brand) -->
+        <linearGradient id="thinOSGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"  stop-color="#FFE27A"/>
+        <stop offset="50%" stop-color="#FFC247"/>
+        <stop offset="100%" stop-color="#FF9800"/>
+        </linearGradient>
+
+        <!-- Clip everything to a circle -->
+        <clipPath id="circleClip">
+            <circle cx="100" cy="100" r="96"/>
+        </clipPath>
+    </defs>
+
+    <!-- Background circle -->
+    <circle cx="100" cy="100" r="96" fill="url(#thinOSGradient)"/>
+
+    <!-- Network lines -->
+    <g clip-path="url(#circleClip)" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+
+        <!-- Central connections -->
+        <line x1="100" y1="100" x2="55"  y2="55"  />
+        <line x1="100" y1="100" x2="145" y2="50"  />
+        <line x1="100" y1="100" x2="165" y2="90"  />
+        <line x1="100" y1="100" x2="145" y2="145" />
+        <line x1="100" y1="100" x2="70"  y2="150" />
+        <line x1="100" y1="100" x2="40"  y2="125" />
+
+        <!-- Outer connections -->
+        <line x1="55"  y1="55"  x2="30"  y2="80"  />
+        <line x1="55"  y1="55"  x2="75"  y2="35"  />
+        <line x1="75"  y1="35"  x2="125" y2="35"  />
+        <line x1="125" y1="35"  x2="165" y2="90"  />
+        <line x1="165" y1="90"  x2="145" y2="145" />
+        <line x1="145" y1="145" x2="70"  y2="150" />
+        <line x1="70"  y1="150" x2="40"  y2="125" />
+        <line x1="40"  y1="125" x2="30"  y2="80"  />
+    </g>
+
+    <!-- Nodes -->
+    <g clip-path="url(#circleClip)" fill="#FFFFFF">
+        <!-- center -->
+        <circle cx="100" cy="100" r="8"  />
+
+        <!-- top-left cluster -->
+        <circle cx="55"  cy="55"  r="7"  />
+        <circle cx="30"  cy="80"  r="6"  />
+        <circle cx="75"  cy="35"  r="6.5"/>
+
+        <!-- top-right cluster -->
+        <circle cx="125" cy="35"  r="6.5"/>
+        <circle cx="165" cy="90"  r="7"  />
+
+        <!-- bottom-right cluster -->
+        <circle cx="145" cy="145" r="7"  />
+
+        <!-- bottom-left cluster -->
+        <circle cx="70"  cy="150" r="7"  />
+        <circle cx="40"  cy="125" r="6"  />
+    </g>
+</svg>

@@ -105,11 +105,6 @@ sudo chmod +x /usr/local/bin/thinos-devmon || true
 # Add user to plugdev group
 sudo usermod -aG plugdev "$USER" || true
 
-# # Systemd service
-# sudo ln -sfn /usr/share/thinOS/src/etc/systemd/system/devmon.service /etc/systemd/system/devmon.service
-# sudo systemctl daemon-reload
-# sudo systemctl enable --now devmon.service
-
 # Install or update the PyRDPConnect repository in /usr/share
 log_step 4 "Installing or updating the PyRDPConnect repository in /usr/share..."
 if [ -d "/usr/share/PyRDPConnect/.git" ]; then
@@ -121,7 +116,7 @@ fi
 # Create a gradient background image
 log_step 5 "Creating a gradient background image..."
 mkdir -p ~/.config/thinOS/backgrounds
-convert -size 1920x1080 gradient:'#265162-#002136' ~/.config/thinOS/backgrounds/gradient.png
+convert -size 1920x1080 gradient:'#76797c-#242829' ~/.config/thinOS/backgrounds/gradient.png
 
 # Configure Openbox
 log_step 6 "Configuring Openbox..."
