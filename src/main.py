@@ -90,9 +90,9 @@ def main():
 
     # Add configuration entries
     if(app.helper.get_os() == "linux"):
-        app.configuration.label("network.wifi", "WiFi")
-        app.configuration.add("network.wifi.ssid", None, "text", label="SSID")
-        app.configuration.add("network.wifi.passphrase", None, "password")
+        app.configuration.label("wifi", "WiFi")
+        app.configuration.add("wifi.ssid", None, "text", label="SSID")
+        app.configuration.add("wifi.passphrase", None, "password")
     app.configuration.add("customize.logo_file", None, "picture", label="Logo File")
     app.configuration.add("customize.gradient_start", "#76797c", "color", label="Gradient Start")
     app.configuration.add("customize.gradient_end", "#242829", "color", label="Gradient End")
