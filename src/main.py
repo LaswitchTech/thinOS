@@ -4,12 +4,28 @@
 import sys
 import os
 
-from app.application import Application
+from core.application import Application
+from core.cli import CommandLine
 
-def main():
+# ---------------------------------------------------------------------------
+# Customization and start of the application
+# ---------------------------------------------------------------------------
 
-    # Create application instance
-    app = Application("thinOS", sys.argv)
+name = "thinOS"
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def has_option():
+    return any(arg.startswith('--') for arg in sys.argv)
+
+# ---------------------------------------------------------------------------
+# Start of the application
+# ---------------------------------------------------------------------------
+
+def start_app():
+    app = Application(name,sys.argv)
 
     def reload():
         start = app.configuration.get("customize.gradient_start") or "#265162"
@@ -106,5 +122,18 @@ def main():
     # When the dialog is closed (Save or Cancel), just exit
     sys.exit(0)
 
+def start_cli():
+    cli = CommandLine(name,sys.argv)
+
+    # All other code gets app via QApplication.instance()
+    sys.exit(cli.exec())
+
+# ---------------------------------------------------------------------------
+# Main entry point
+# ---------------------------------------------------------------------------
+
 if __name__ == "__main__":
-    main()
+    if has_option():
+        start_cli()
+    else:
+        start_app()
