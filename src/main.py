@@ -107,7 +107,7 @@ def start_app():
     # Add configuration entries
     if(app.helper.get_os() == "linux"):
         app.configuration.label("wifi", "WiFi")
-        app.configuration.add("wifi.ssid", None, "text", label="SSID")
+        app.configuration.add("wifi.ssid", None, "wifi", label="SSID")
         app.configuration.add("wifi.passphrase", None, "password")
     app.configuration.add("customize.logo_file", None, "picture", label="Logo File")
     app.configuration.add("customize.gradient_start", "#76797c", "color", label="Gradient Start")
