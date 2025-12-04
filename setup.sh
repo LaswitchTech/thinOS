@@ -223,6 +223,17 @@ if [ "$DISTRO" == "raspbian" ]; then
     # Boot to desktop
     sudo raspi-config nonint do_boot_behaviour B4
 
+    # Set WiFi country so the radio is allowed to transmit
+    sudo raspi-config nonint do_wifi_country CA || true
+
+    # Ensure WiFi is not disabled via config.txt overlay
+    CFG=/boot/firmware/config.txt
+    [ -f "$CFG" ] || CFG=/boot/config.txt
+    sudo sed -i '/^dtoverlay=disable-wifi/d' "$CFG"
+
+    # Make sure WiFi isn't blocked by rfkill
+    sudo rfkill unblock wifi || true
+
     # Choose correct config path (Bookworm vs older)
     CFG=/boot/firmware/config.txt
     [ -f "$CFG" ] || CFG=/boot/config.txt
