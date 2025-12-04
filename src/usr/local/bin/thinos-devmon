@@ -1,0 +1,4 @@
+#!/bin/bash
+devmon --exec-on-drive "notify-send 'Drive mounted' '%l mounted at %m'" \
+       --exec-on-unmount "notify-send 'Drive removed' '%l unmounted'" \
+       --no-gui

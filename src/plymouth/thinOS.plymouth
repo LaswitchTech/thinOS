@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=thinOS
+Description=A forked breeze plymouth theme with thinOS logo
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/thinOS
+ScriptFile=/usr/share/plymouth/themes/thinOS/thinOS.script

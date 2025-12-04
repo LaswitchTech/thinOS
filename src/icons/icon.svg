@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 200 300">
+    <defs>
+        <!-- Background gradient (can be tweaked to match thinOS branding) -->
+        <linearGradient id="thinOSGradient1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="#FFE27A"/>
+            <stop offset="50%" stop-color="#FFC247"/>
+            <stop offset="100%" stop-color="#FF9800"/>
+        </linearGradient>
+        <linearGradient id="thinOSGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#5380e4"/>
+            <stop offset="100%" stop-color="#26C4FF"/>
+        </linearGradient>
+
+        <!-- Clip everything to a circle -->
+        <clipPath id="circleClip">
+            <circle cx="100" cy="120" r="96"/>
+        </clipPath>
+    </defs>
+
+    <!-- Background circle -->
+    <circle cx="100" cy="120" r="96" fill="url(#thinOSGradient1)"/>
+
+    <!-- Network lines, approximated to match the original logo layout -->
+    <g clip-path="url(#circleClip)" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+        <g transform="translate(0,20)">
+            <line x1="69" y1="92" x2="35" y2="117"/>
+            <line x1="69" y1="92" x2="85" y2="34"/>
+            <line x1="69" y1="92" x2="141" y2="76"/>
+            <line x1="69" y1="92" x2="121" y2="158"/>
+            <line x1="69" y1="92" x2="72" y2="177"/>
+            <line x1="69" y1="92" x2="0" y2="88"/>
+            <line x1="0" y1="88" x2="35" y2="117"/>
+            <line x1="69" y1="92" x2="40" y2="0"/>
+            <line x1="85" y1="34" x2="40" y2="0"/>
+            <line x1="85" y1="34" x2="140" y2="0"/>
+            <line x1="141" y1="76" x2="85" y2="34"/>
+            <line x1="141" y1="76" x2="167" y2="120"/>
+            <line x1="141" y1="76" x2="200" y2="80"/>
+            <line x1="141" y1="76" x2="200" y2="80"/>
+            <line x1="141" y1="76" x2="140" y2="0"/>
+            <line x1="141" y1="76" x2="200" y2="0"/>
+            <line x1="141" y1="76" x2="200" y2="120"/>
+            <line x1="141" y1="76" x2="121" y2="158"/>
+            <line x1="121" y1="158" x2="167" y2="120"/>
+            <line x1="121" y1="158" x2="72" y2="177"/>
+            <line x1="121" y1="158" x2="120" y2="200"/>
+            <line x1="121" y1="158" x2="200" y2="200"/>
+            <line x1="35" y1="117" x2="0" y2="135"/>
+            <line x1="167" y1="120" x2="200" y2="135"/>
+            <line x1="72" y1="177" x2="40" y2="200"/>
+            <line x1="72" y1="177" x2="80" y2="200"/>
+        </g>
+    </g>
+
+    <!-- Nodes, sized and placed to resemble the original bitmap -->
+    <g clip-path="url(#circleClip)" fill="#FFFFFF">
+        <g transform="translate(0,20)">
+            <circle cx="69" cy="92" r="12"/>
+            <circle cx="85" cy="34" r="10"/>
+            <circle cx="141" cy="76" r="12"/>
+            <circle cx="121" cy="158" r="14"/>
+            <circle cx="35" cy="117" r="8"/>
+            <circle cx="167" cy="120" r="8"/>
+            <circle cx="72" cy="177" r="6"/>
+        </g>
+    </g>
+
+    <!-- thinOS wordmark -->
+    <text x="100" y="275" text-anchor="middle" font-family="sans-serif" font-size="32" font-weight="300">
+        <tspan fill="url(#thinOSGradient2)">thin</tspan><tspan font-size="40" fill="url(#thinOSGradient1)">OS</tspan>
+    </text>
+</svg>

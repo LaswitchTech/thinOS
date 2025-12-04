@@ -1,0 +1,10 @@
+[Unit]
+Description=Automount removable media using devmon (udevil)
+After=udev.service systemd-udevd.service
+
+[Service]
+ExecStart=/usr/bin/devmon --no-gui
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
