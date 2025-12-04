@@ -100,15 +100,49 @@ def start_app():
             "Rebuilding initramfs…",
         )
 
+    def connect():
+        # Only attempt WiFi configuration on Linux
+        if app.helper.get_os() != "linux":
+            return
+
+        # Only attempt WiFi configuration on ARM64
+        if app.helper.get_arch() != "arm64":
+            return
+
+        ssid = app.configuration.get("wifi.ssid")
+        passphrase = app.configuration.get("wifi.passphrase")
+
+        # Nothing to do if SSID is not configured
+        if not ssid:
+            return
+
+        # Ensure WiFi radio is enabled
+        app._run_system_command(
+            ["nmcli", "radio", "wifi", "on"],
+            wait=True,
+        )
+
+        # Build nmcli command to connect wlan0
+        cmd = ["nmcli", "dev", "wifi", "connect", ssid, "ifname", "wlan0"]
+        if passphrase:
+            cmd += ["password", passphrase]
+
+        # Run the connection command synchronously so we know when it's done
+        app._run_system_command(
+            cmd,
+            wait=True,
+        )
+
     # Connect to update signal
     app.updating.connect(update)
     app.configuration.configChanged.connect(reload)
 
     # Add configuration entries
-    if(app.helper.get_os() == "linux"):
+    if(app.helper.get_os() == "linux" and app.helper.get_arch() == "arm64"):
         app.configuration.label("wifi", "WiFi")
         app.configuration.add("wifi.ssid", None, "wifi", label="SSID")
         app.configuration.add("wifi.passphrase", None, "password")
+        app.configuration.configChanged.connect(connect)
     app.configuration.add("customize.logo_file", None, "picture", label="Logo File")
     app.configuration.add("customize.gradient_start", "#76797c", "color", label="Gradient Start")
     app.configuration.add("customize.gradient_end", "#242829", "color", label="Gradient End")
