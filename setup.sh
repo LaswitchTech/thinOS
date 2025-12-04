@@ -22,6 +22,33 @@ get_distribution() {
 # Get the distribution
 DISTRO=$(get_distribution)
 
+# Default Branch
+BRANCH="stable"
+
+# Parse arguments for --branch
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --branch)
+            if [ -n "$2" ]; then
+                BRANCH="$2"
+                shift 2
+                continue
+            else
+                echo "Error: --branch requires a value (e.g. --branch dev)" >&2
+                exit 1
+            fi
+            ;;
+        --branch=*)
+            BRANCH="${1#*=}"
+            shift
+            continue
+            ;;
+        *)
+            shift
+            ;;
+    case
+done
+
 # Function to print the current step
 log_step() {
     echo "Step $1: $2"
@@ -86,9 +113,10 @@ if [ -d "/usr/share/thinOS" ] && [ ! -f "/usr/share/thinOS/.gitmodules" ]; then
     sudo rm -rf /usr/share/thinOS
 fi
 if [ -d "/usr/share/thinOS/.git" ]; then
+    sudo git -C /usr/share/thinOS checkout $BRANCH
     sudo git -C /usr/share/thinOS pull --recurse-submodules
 else
-    sudo git clone --recursive --branch dev https://github.com/LaswitchTech/thinOS.git /usr/share/thinOS
+    sudo git clone --recursive --branch $BRANCH https://github.com/LaswitchTech/thinOS.git /usr/share/thinOS
 fi
 
 # Configure uDevil to allow non-sudo mounting of USB drives
@@ -112,9 +140,10 @@ if [ -d "/usr/share/PyRDPConnect" ] && [ ! -f "/usr/share/PyRDPConnect/.gitmodul
     sudo rm -rf /usr/share/PyRDPConnect
 fi
 if [ -d "/usr/share/PyRDPConnect/.git" ]; then
+    sudo git -C /usr/share/PyRDPConnect checkout $BRANCH
     sudo git -C /usr/share/PyRDPConnect pull --recurse-submodules
 else
-    sudo git clone --recursive --branch dev https://github.com/LaswitchTech/PyRDPConnect.git /usr/share/PyRDPConnect
+    sudo git clone --recursive --branch $BRANCH https://github.com/LaswitchTech/PyRDPConnect.git /usr/share/PyRDPConnect
 fi
 
 # Create a gradient background image
