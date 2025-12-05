@@ -148,33 +148,33 @@ fi
 
 # Create a gradient background image
 log_step 5 "Creating a gradient background image..."
-mkdir -p ~/.config/thinOS/backgrounds
-convert -size 1920x1080 gradient:'#76797c-#242829' ~/.config/thinOS/backgrounds/gradient.png
+mkdir -p $HOME/.config/thinOS/backgrounds
+convert -size 1920x1080 gradient:'#76797c-#242829' $HOME/.config/thinOS/backgrounds/gradient.png
 
 # Configure Openbox
 log_step 6 "Configuring Openbox..."
 sudo sed -i 's/^#user-session=.*/user-session=openbox/' /etc/lightdm/lightdm.conf
-mkdir -p ~/.config
-if [ -d ~/.config/openbox ]; then
-    rm -r ~/.config/openbox
+mkdir -p $HOME/.config
+if [ -d $HOME/.config/openbox ]; then
+    rm -r $HOME/.config/openbox
 fi
-ln -sfn /usr/share/thinOS/src/openbox ~/.config/openbox
-ln -sfn /usr/share/thinOS/src/.xinitrc ~/.xinitrc
-ln -sfn /usr/share/thinOS/src/.xinitrc ~/.xsession
-mkdir -p ~/.themes
-ln -sfn /usr/share/thinOS/src/thinOS ~/.themes/thinOS
-ln -sfn /usr/share/thinOS/src/.Xdefaults ~/.Xdefaults
+ln -sfn /usr/share/thinOS/src/openbox $HOME/.config/openbox
+ln -sfn /usr/share/thinOS/src/.xinitrc $HOME/.xinitrc
+ln -sfn /usr/share/thinOS/src/.xinitrc $HOME/.xsession
+mkdir -p $HOME/.themes
+ln -sfn /usr/share/thinOS/src/thinOS $HOME/.themes/thinOS
+ln -sfn /usr/share/thinOS/src/.Xdefaults $HOME/.Xdefaults
 
 # Setup bash profile and aliases
 log_step 7 "Setup bash profile and aliases..."
-if [ -f ~/.bash_profile ]; then
-    rm ~/.bash_profile
+if [ -f $HOME/.bash_profile ]; then
+    rm $HOME/.bash_profile
 fi
-ln -sfn /usr/share/thinOS/src/.bash_profile ~/.bash_profile
-if [ -f ~/.bash_aliases ]; then
-    rm ~/.bash_aliases
+ln -sfn /usr/share/thinOS/src/.bash_profile $HOME/.bash_profile
+if [ -f $HOME/.bash_aliases ]; then
+    rm $HOME/.bash_aliases
 fi
-ln -sfn /usr/share/thinOS/src/.bash_aliases ~/.bash_aliases
+ln -sfn /usr/share/thinOS/src/.bash_aliases $HOME/.bash_aliases
 
 # Set locale and timezone
 log_step 8 "Setting locale and timezone..."
@@ -214,14 +214,17 @@ log_step 12 "Configuring system and Firefox dark mode..."
 
 # System GTK dark mode (source of truth in /usr/share/thinOS/src)
 if [ -f /usr/share/thinOS/src/gtk/settings.ini ]; then
-    mkdir -p ~/.config/gtk-3.0
-    ln -sfn /usr/share/thinOS/src/gtk/settings.ini ~/.config/gtk-3.0/settings.ini
+    mkdir -p $HOME/.config/gtk-3.0
+    ln -sfn /usr/share/thinOS/src/gtk/settings.ini $HOME/.config/gtk-3.0/settings.ini
 fi
 
 # Firefox dark mode via user.js (source of truth in /usr/share/thinOS/src)
 if [ -f /usr/share/thinOS/src/firefox/user.js ]; then
-    if [ -d ~/.mozilla/firefox ]; then
-        for FF_PROFILE in ~/.mozilla/firefox/*.default ~/.mozilla/firefox/*.default-esr; do
+    if [ ! -d $HOME/.mozilla/firefox ]; then
+        mkdir -p $HOME/.mozilla/firefox
+    fi
+    if [ -d $HOME/.mozilla/firefox ]; then
+        for FF_PROFILE in $HOME/.mozilla/firefox/*.default $HOME/.mozilla/firefox/*.default-esr; do
             [ -d "$FF_PROFILE" ] || continue
             ln -sfn /usr/share/thinOS/src/firefox/user.js "$FF_PROFILE/user.js"
         done
