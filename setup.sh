@@ -46,7 +46,7 @@ while [ "$#" -gt 0 ]; do
         *)
             shift
             ;;
-    case
+    esac
 done
 
 # Function to print the current step
