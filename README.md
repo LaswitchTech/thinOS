@@ -18,11 +18,15 @@ thinOS is a lightweight, cross-platform desktop operating system designed for ef
   - **Robust Security**: thinOS includes built-in security features to protect user data and maintain system integrity.
 
 ## Installation
-To install thinOS, login to your current operating system and run the following command in your terminal:
+To install thinOS, login to your current operating system (Debian based distributions supported only) and run the following command in your terminal:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/LaswitchTech/thinOS/stable/setup.sh | bash
 ```
+
+### Tested On
+  - Debian 12 (Bookworm)
+  - Raspberry Pi OS (Bookworm) (64-bit) Lite
 
 ## License
 This software is distributed under the [GPLv3](LICENSE) license.
