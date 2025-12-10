@@ -71,6 +71,7 @@ log_step 2 "Installing a Minimal Desktop Environment, Git, Firefox, ImageMagick,
 if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y git || true
     sudo apt-get install -y net-tools || true
+    sudo apt-get install -y info || true
     sudo apt-get install -y nmap || true
     sudo apt-get install -y fping || true
     sudo apt-get install -y dnsutils || true
@@ -93,7 +94,9 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y libswscale6 || true
     sudo apt-get install -y liburiparser1 || true
     sudo apt-get install -y libcjson1 || true
+    sudo apt-get install -y libcap2-bin || true
     sudo apt-get install -y openvpn || true
+    sudo apt-get install -y openvpn-systemd-resolved || true
     sudo apt-get install -y wireguard-tools || true
     sudo apt-get install -y python3 || true
     sudo apt-get install -y python3-pyqt5 || true
@@ -149,7 +152,7 @@ fi
 # Create a gradient background image
 log_step 5 "Creating a gradient background image..."
 mkdir -p $HOME/.config/thinOS/backgrounds
-convert -size 1920x1080 gradient:'#76797c-#242829' $HOME/.config/thinOS/backgrounds/gradient.png
+convert -size 1920x1080 gradient:'#595959-#242829' $HOME/.config/thinOS/backgrounds/gradient.png
 
 # Configure Openbox
 log_step 6 "Configuring Openbox..."
@@ -231,6 +234,13 @@ if [ -f /usr/share/thinOS/src/firefox/user.js ]; then
     fi
 fi
 
+# Additional Linux specific configurations
+if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
+    log_step "12a" "Configuring OpenVPN for Linux..."
+    # Set capabilities on OpenVPN binaries to allow non-sudo binding to privileged ports
+    sudo setcap 'cap_net_admin,cap_net_bind_service=+ep' /usr/share/PyRDPConnect/src/bin/openvpn/linux/arm64/openvpn
+fi
+
 # Enable auto-login for Debian
 if [ "$DISTRO" == "debian" ]; then
     log_step 13 "Enabling auto-login for Debian..."
@@ -247,7 +257,6 @@ if [ "$DISTRO" == "debian" ]; then
     fi
 fi
 
-#
 # Additional Raspberry Pi OS-specific configurations
 if [ "$DISTRO" == "raspbian" ]; then
     log_step 14 "Configuring Raspberry Pi OS for desktop boot and multi-monitor support..."
