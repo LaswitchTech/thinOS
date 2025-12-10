@@ -255,6 +255,7 @@ if [ -f /usr/share/thinOS/src/firefox/user.js ]; then
     fi
 
     # Final step: create the symlink if we found a profile
+    ln -sfn /usr/share/thinOS/src/firefox/user.js "$HOME/.mozilla/firefox/user.js"
     if [ -n "$PROFILE_DIR" ]; then
         mkdir -p "$PROFILE_DIR"
         ln -sfn /usr/share/thinOS/src/firefox/user.js "$PROFILE_DIR/user.js"
