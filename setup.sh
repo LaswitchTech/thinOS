@@ -309,10 +309,10 @@ if [ "$DISTRO" == "raspbian" ]; then
     CFG=/boot/firmware/config.txt
     [ -f "$CFG" ] || CFG=/boot/config.txt
 
-    if printf '%s\n' "$@" | grep -q -- --multimon; then
-        # Only add our block once, marked by a comment
-        if ! grep -q "thinOS-multimon" "$CFG"; then
-            sudo bash -c "cat <<'EOL' >> '$CFG'
+    # Enable multi-monitor HDMI support
+    # Only add our block once, marked by a comment
+    if ! grep -q "thinOS-multimon" "$CFG"; then
+        sudo bash -c "cat <<'EOL' >> '$CFG'
 
 # thinOS-multimon
 # Enable HDMI output for both monitors
@@ -331,7 +331,6 @@ disable_overscan=1
 # Disable firmware splash on Pi
 disable_splash=1
 EOL"
-        fi
     fi
 fi
 
