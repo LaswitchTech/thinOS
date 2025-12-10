@@ -152,7 +152,7 @@ fi
 # Create a gradient background image
 log_step 5 "Creating a gradient background image..."
 mkdir -p $HOME/.config/thinOS/backgrounds
-convert -size 1920x1080 gradient:'#76797c-#242829' $HOME/.config/thinOS/backgrounds/gradient.png
+convert -size 1920x1080 gradient:'#595959-#242829' $HOME/.config/thinOS/backgrounds/gradient.png
 
 # Configure Openbox
 log_step 6 "Configuring Openbox..."

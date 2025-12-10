@@ -50,7 +50,7 @@ def start_app():
         )
 
     def update(do):
-        start = app.configuration.get("customize.gradient_start") or "#76797c"
+        start = app.configuration.get("customize.gradient_start") or "#595959"
         end = app.configuration.get("customize.gradient_end") or "#242829"
         resolution = app.helper.get_screen_resolution()
         if resolution == (0, 0):
@@ -144,7 +144,7 @@ def start_app():
         app.configuration.add("wifi.passphrase", None, "password")
         app.configuration.configChanged.connect(connect)
     app.configuration.add("customize.logo_file", None, "picture", label="Logo File")
-    app.configuration.add("customize.gradient_start", "#76797c", "color", label="Gradient Start")
+    app.configuration.add("customize.gradient_start", "#595959", "color", label="Gradient Start")
     app.configuration.add("customize.gradient_end", "#242829", "color", label="Gradient End")
 
     # Save any new defaults
