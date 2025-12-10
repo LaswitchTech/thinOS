@@ -96,7 +96,7 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y libcjson1 || true
     sudo apt-get install -y libcap2-bin || true
     sudo apt-get install -y openvpn || true
-    sudo apt-get install -y openvpn-systemd-resolved || true
+    # sudo apt-get install -y openvpn-systemd-resolved || true
     sudo apt-get install -y wireguard-tools || true
     sudo apt-get install -y python3 || true
     sudo apt-get install -y python3-pyqt5 || true
