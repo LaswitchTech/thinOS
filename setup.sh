@@ -222,47 +222,29 @@ if [ -f /usr/share/thinOS/src/gtk/settings.ini ]; then
 fi
 
 # Firefox dark mode via user.js (source of truth in /usr/share/thinOS/src)
+# First, ensure at least one Firefox ESR profile exists by launching it once headlessly.
+if command -v firefox-esr >/dev/null 2>&1; then
+    # If no profile directory or no *.default* profiles exist, start Firefox ESR once
+    if [ ! -d "$HOME/.mozilla/firefox" ] || ! compgen -G "$HOME/.mozilla/firefox/*.default*" > /dev/null; then
+        echo "Initializing Firefox ESR profile (headless run)..."
+        firefox-esr --headless >/dev/null 2>&1 &
+        FF_PID=$!
+        # Give it a few seconds to create the default profile
+        sleep 10
+        # Try to stop Firefox cleanly, ignore errors if it's already exited
+        kill "$FF_PID" 2>/dev/null || pkill -f firefox-esr || true
+    fi
+fi
+
+# Now link user.js into all available default profiles (ESR and non-ESR)
 if [ -f /usr/share/thinOS/src/firefox/user.js ]; then
-    # Ensure base dir exists
     mkdir -p "$HOME/.mozilla/firefox"
 
-    PROFILE_DIR=""
-
-    # If profiles.ini exists, parse the default profile
-    if [ -f "$HOME/.mozilla/firefox/profiles.ini" ]; then
-        PROFILE_REL_PATH=$(
-            awk -F= '
-                /^\[Profile[0-9]+\]/{in_profile=1; def=0; next}
-                /^\[Profile/ {in_profile=0; def=0; next}
-                in_profile && /^Default=1/ {def=1; next}
-                in_profile && /^Path=/{ if (def) {print $2; exit} }
-            ' "$HOME/.mozilla/firefox/profiles.ini"
-        )
-
-        if [ -n "$PROFILE_REL_PATH" ]; then
-            PROFILE_DIR="$HOME/.mozilla/firefox/$PROFILE_REL_PATH"
-        fi
-    fi
-
-    # Fallback: use globbing if we still don't have a profile dir
-    if [ -z "$PROFILE_DIR" ]; then
-        for FF_PROFILE in "$HOME"/.mozilla/firefox/*.default "$HOME"/.mozilla/firefox/*.default-esr; do
-            if [ -d "$FF_PROFILE" ]; then
-                PROFILE_DIR="$FF_PROFILE"
-                break
-            fi
-        done
-    fi
-
-    # Final step: create the symlink if we found a profile
-    ln -sfn /usr/share/thinOS/src/firefox/user.js "$HOME/.mozilla/firefox/user.js"
-    if [ -n "$PROFILE_DIR" ]; then
-        mkdir -p "$PROFILE_DIR"
-        ln -sfn /usr/share/thinOS/src/firefox/user.js "$PROFILE_DIR/user.js"
-        echo "Linked Firefox user.js into: $PROFILE_DIR"
-    else
-        echo "Warning: No Firefox profile found yet. Run firefox-esr once, then re-run this part of setup."
-    fi
+    for FF_PROFILE in "$HOME"/.mozilla/firefox/*.default "$HOME"/.mozilla/firefox/*.default-*; do
+        [ -d "$FF_PROFILE" ] || continue
+        ln -sfn /usr/share/thinOS/src/firefox/user.js "$FF_PROFILE/user.js"
+        echo "Linked Firefox user.js into: $FF_PROFILE"
+    done
 fi
 
 # Additional Linux specific configurations
