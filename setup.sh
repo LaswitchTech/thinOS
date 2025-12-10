@@ -100,8 +100,6 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y python3 || true
     sudo apt-get install -y python3-pyqt5 || true
     sudo apt-get install -y python3-pyqt5* || true
-    sudo apt-get install -y openvpn-systemd-resolved || true
-    sudo systemctl enable --now systemd-resolved || true
 else
     echo "Unsupported distribution: $DISTRO"
     exit 1
@@ -316,6 +314,16 @@ disable_overscan=1
 disable_splash=1
 EOL"
     fi
+fi
+
+# Install necessary packages based on the distribution
+log_step 2 "Installing a Minimal Desktop Environment, Git, Firefox, ImageMagick, and feh..."
+if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
+    sudo apt-get install -y openvpn-systemd-resolved || true
+    sudo systemctl enable --now systemd-resolved || true
+else
+    echo "Unsupported distribution: $DISTRO"
+    exit 1
 fi
 
 # Cleanup step
