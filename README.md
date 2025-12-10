@@ -37,5 +37,12 @@ Contributions to thinOS are welcome! If you have ideas for new features or have 
   - **Fork the Repository**: Create a fork of the repository on GitHub.
   - **Create a New Branch**: For new features or bug fixes, create a new branch in your fork.
   - **Submit a Pull Request**: Once your changes are ready, submit a pull request to the main repository.
+
+## To Do
+  - **Remote Assitance**: Implement a remote assistance feature for user support.
+  - **Provisioning System**: Develop a provisioning system for easier deployment and management.
+  - **Splash Screen**: Add a customizable splash screen during boot.
+  - **Screen Manager**: Integrate a screen manager for better multi-monitor support.
+
 ## Wait, where is the documentation?
 Review the [Documentation](https://laswitchtech.com/en/blog/projects/thinos/index).
