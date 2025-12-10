@@ -317,7 +317,7 @@ EOL"
 fi
 
 # Install necessary packages based on the distribution
-log_step 2 "Installing a Minimal Desktop Environment, Git, Firefox, ImageMagick, and feh..."
+log_step 2 "Installing a ..."
 if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y openvpn-systemd-resolved || true
     sudo systemctl enable --now systemd-resolved || true
