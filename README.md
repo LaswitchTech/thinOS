@@ -10,19 +10,19 @@
 ## Description
 thinOS is a lightweight, cross-platform desktop operating system designed for efficiency and simplicity. It provides a minimalistic environment optimized for performance, making it ideal for users who require a fast and responsive system without unnecessary bloat. thinOS is built with modern technologies to ensure compatibility with a wide range of hardware while maintaining a sleek user interface.
 
-## Installation
-To install thinOS, follow these steps:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/LaswitchTech/thinOS/stable/setup.sh | bash
-```
-
 ## Features
   - **Lightweight Design**: thinOS is optimized for speed and efficiency, ensuring quick boot times and low resource consumption.
   - **Cross-Platform Compatibility**: Designed to run on various hardware architectures, thinOS supports a wide range of devices.
   - **User-Friendly Interface**: The operating system features a clean and intuitive user interface, making it easy for users to navigate and manage their system.
   - **Customizable Environment**: Users can tailor their thinOS experience with various themes, extensions, and configurations.
   - **Robust Security**: thinOS includes built-in security features to protect user data and maintain system integrity.
+
+## Installation
+To install thinOS, login to your current operating system and run the following command in your terminal:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/LaswitchTech/thinOS/stable/setup.sh | bash
+```
 
 ## License
 This software is distributed under the [GPLv3](LICENSE) license.
