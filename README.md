@@ -24,6 +24,35 @@ To install thinOS, login to your current operating system (Debian based distribu
 curl -fsSL https://raw.githubusercontent.com/LaswitchTech/thinOS/stable/setup.sh | bash
 ```
 
+### On Debian
+Install sudo and curl if not already installed:
+
+```bash
+su -
+apt update
+apt install sudo curl -y
+usermod -aG sudo your_username
+exit
+```
+
+Then run the installation command above.
+
+
+### AMD GPU Acceleration
+To enable AMD GPU acceleration, install the following packages before running the installation script:
+
+```bash
+sudo apt install firmware-amd-graphics -y
+```
+
+### NVIDIA GPU Acceleration
+To enable NVIDIA GPU acceleration, install the following packages before running the installation script:
+
+```bash
+sudo apt install nvidia-driver nvidia-xconfig -y
+sudo nvidia-xconfig
+```
+
 ### Tested On
   - Debian 12 (Bookworm)
   - Raspberry Pi OS (Bookworm) (64-bit) Lite
