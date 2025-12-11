@@ -203,6 +203,22 @@ if [ -f "$FILE" ]; then
         sudo sed -i 's/$/ splash quiet plymouth.ignore-serial-consoles/' "$FILE"
     fi
 fi
+if [ "$DISTRO" == "debian" ]; then
+    log_step "10a" "Enabling splash and quiet mode via GRUB on Debian..."
+
+    # Only touch GRUB_CMDLINE_LINUX_DEFAULT line
+    if grep -q '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub; then
+        # Ensure 'quiet' is present
+        sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="\([^"]*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 quiet"/' /etc/default/grub
+
+        # Ensure 'splash' is present
+        sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="\([^"]*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 splash plymouth.ignore-serial-consoles net.ifnames=0 biosdevname=0"/' /etc/default/grub
+    else
+        echo 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash plymouth.ignore-serial-consoles"' | sudo tee -a /etc/default/grub
+    fi
+
+    sudo update-grub
+fi
 
 # Copy and set custom Plymouth theme
 log_step 11 "Setting the custom Plymouth theme..."
@@ -316,11 +332,31 @@ EOL"
     fi
 fi
 
-# Install necessary packages based on the distribution
-log_step 2 "Installing a ..."
+# Configure systemd-resolved and NetworkManager DNS integration
+log_step "14c" "Configuring systemd-resolved and NetworkManager DNS integration..."
 if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
-    sudo apt-get install -y openvpn-systemd-resolved || true
+    # Ensure required packages are installed
+    sudo apt-get install -y systemd-resolved network-manager openvpn-systemd-resolved || true
+
+    # Enable and start services
     sudo systemctl enable --now systemd-resolved || true
+    sudo systemctl enable --now NetworkManager || true
+
+    # Make /etc/resolv.conf use the systemd-resolved stub resolver
+    if [ -e /etc/resolv.conf ] || [ -L /etc/resolv.conf ]; then
+        sudo rm -f /etc/resolv.conf
+    fi
+    sudo ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+    # Tell NetworkManager to hand DNS to systemd-resolved
+    sudo mkdir -p /etc/NetworkManager/conf.d
+    sudo bash -c 'cat > /etc/NetworkManager/conf.d/10-dns-systemd-resolved.conf' << "EOF"
+[main]
+dns=systemd-resolved
+EOF
+
+    # Restart NetworkManager to apply DNS settings
+    sudo systemctl restart NetworkManager || true
 else
     echo "Unsupported distribution: $DISTRO"
     exit 1
