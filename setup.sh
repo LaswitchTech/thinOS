@@ -91,7 +91,6 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y openbox || true
     sudo apt-get install -y udevil || true
     sudo apt-get install -y libnotify-bin || true
-    sudo apt-get install -y udisks2 || true
     sudo apt-get install -y exfatprogs || true
     sudo apt-get install -y ntfs-3g || true
     sudo apt-get install -y exfat-fuse || true
@@ -156,12 +155,20 @@ sudo chmod +x /usr/local/bin/thinos-devmon || true
 # Add user to plugdev group
 sudo usermod -aG plugdev "$USER" || true
 
+#
+# # Remove udisks2 entirely to prevent it from auto-mounting optical media to /media/cdrom0
+# sudo apt-get purge -y udisks2 2>/dev/null || true
+# sudo apt-get autoremove -y 2>/dev/null || true
+
 # Disable udisks2 automount (we use devmon/udevil instead to mount as the session user)
 sudo systemctl disable --now udisks2.service udisks2.socket 2>/dev/null || true
 sudo systemctl mask udisks2.service udisks2.socket 2>/dev/null || true
 
+#
 # If a previous devmon system service exists, disable it (devmon should run in the user session)
 sudo systemctl disable --now devmon.service 2>/dev/null || true
+
+echo "NOTE: If optical discs still mount to /media/cdrom0 after reboot, check /etc/fstab for /dev/sr0 entries and remove them so devmon/udevil can handle sr0."
 
 # Install or update the PyRDPConnect repository in /usr/share
 log_step 4 "Installing or updating the PyRDPConnect repository in /usr/share..."
