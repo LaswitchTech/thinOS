@@ -18,11 +18,45 @@ thinOS is a lightweight, cross-platform desktop operating system designed for ef
   - **Robust Security**: thinOS includes built-in security features to protect user data and maintain system integrity.
 
 ## Installation
-To install thinOS, login to your current operating system and run the following command in your terminal:
+To install thinOS, login to your current operating system (Debian based distributions supported only) and run the following command in your terminal:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/LaswitchTech/thinOS/stable/setup.sh | bash
 ```
+
+### On Debian
+Install sudo and curl if not already installed:
+
+```bash
+su -
+apt update
+apt install sudo curl -y
+usermod -aG sudo your_username
+exit
+```
+
+Then run the installation command above.
+
+
+### AMD GPU Acceleration
+To enable AMD GPU acceleration, install the following packages before running the installation script:
+
+```bash
+sudo apt install firmware-amd-graphics -y
+```
+
+### NVIDIA GPU Acceleration
+To enable NVIDIA GPU acceleration, install the following packages before running the installation script:
+
+```bash
+sudo apt install nvidia-detect -y
+nvidia-detect
+sudo apt install nvidia-driver -y # or the recommended driver from nvidia-detect
+```
+
+### Tested On
+  - Debian 12 (Bookworm)
+  - Raspberry Pi OS (Bookworm) (64-bit) Lite
 
 ## License
 This software is distributed under the [GPLv3](LICENSE) license.
@@ -37,5 +71,12 @@ Contributions to thinOS are welcome! If you have ideas for new features or have 
   - **Fork the Repository**: Create a fork of the repository on GitHub.
   - **Create a New Branch**: For new features or bug fixes, create a new branch in your fork.
   - **Submit a Pull Request**: Once your changes are ready, submit a pull request to the main repository.
+
+## To Do
+  - **Remote Assitance**: Implement a remote assistance feature for user support.
+  - **Provisioning System**: Develop a provisioning system for easier deployment and management.
+  - **Splash Screen**: Add a customizable splash screen during boot.
+  - **Screen Manager**: Integrate a screen manager for better multi-monitor support.
+
 ## Wait, where is the documentation?
 Review the [Documentation](https://laswitchtech.com/en/blog/projects/thinos/index).

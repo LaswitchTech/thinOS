@@ -66,6 +66,18 @@ else
     exit 1
 fi
 
+# Ensure Debian has contrib, non-free, and non-free-firmware enabled (required for nvidia-driver)
+if [ "$DISTRO" == "debian" ]; then
+    log_step "1a" "Ensuring contrib, non-free, and non-free-firmware are enabled in sources.list..."
+
+    if [ -f /etc/apt/sources.list ]; then
+        sudo sed -i 's/^\s*deb\s\+\(.*\)\s\+main\s*$/deb \1 main contrib non-free non-free-firmware/' /etc/apt/sources.list
+    fi
+
+    # Update once the new components are present
+    sudo apt-get update
+fi
+
 # Install necessary packages based on the distribution
 log_step 2 "Installing a Minimal Desktop Environment, Git, Firefox, ImageMagick, and feh..."
 if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
@@ -82,7 +94,6 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y exfatprogs || true
     sudo apt-get install -y ntfs-3g || true
     sudo apt-get install -y exfat-fuse || true
-    sudo apt-get install -y exfatprogs || true
     sudo apt-get install -y firefox-esr || true
     sudo apt-get install -y alsa-utils || true
     sudo apt-get install -y pulseaudio pavucontrol || true
@@ -100,6 +111,14 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y python3 || true
     sudo apt-get install -y python3-pyqt5 || true
     sudo apt-get install -y python3-pyqt5* || true
+    # if [ "$DISTRO" == "debian" ]; then
+    #     sudo apt-get install -y nvidia-driver || true
+    #     sudo apt-get install -y nvidia-tesla-470-driver || true
+    #     sudo apt-get install -y glx-alternative-nvidia || true
+    #     sudo apt-get install -y firmware-misc-nonfree || true
+    #     sudo apt-get install -y firmware-amd-graphics || true
+    #     sudo apt-get install -y xserver-xorg-video-nouveau || true
+    # fi
 else
     echo "Unsupported distribution: $DISTRO"
     exit 1
@@ -136,6 +155,21 @@ sudo chmod +x /usr/local/bin/thinos-devmon || true
 # Add user to plugdev group
 sudo usermod -aG plugdev "$USER" || true
 
+#
+# # Remove udisks2 entirely to prevent it from auto-mounting optical media to /media/cdrom0
+# sudo apt-get purge -y udisks2 2>/dev/null || true
+# sudo apt-get autoremove -y 2>/dev/null || true
+
+# Disable udisks2 automount (we use devmon/udevil instead to mount as the session user)
+sudo systemctl disable --now udisks2.service udisks2.socket 2>/dev/null || true
+sudo systemctl mask udisks2.service udisks2.socket 2>/dev/null || true
+
+#
+# If a previous devmon system service exists, disable it (devmon should run in the user session)
+sudo systemctl disable --now devmon.service 2>/dev/null || true
+
+echo "NOTE: If optical discs still mount to /media/cdrom0 after reboot, check /etc/fstab for /dev/sr0 entries and remove them so devmon/udevil can handle sr0."
+
 # Install or update the PyRDPConnect repository in /usr/share
 log_step 4 "Installing or updating the PyRDPConnect repository in /usr/share..."
 if [ -d "/usr/share/PyRDPConnect" ] && [ ! -f "/usr/share/PyRDPConnect/.gitmodules" ]; then
@@ -161,6 +195,10 @@ if [ -d $HOME/.config/openbox ]; then
     rm -r $HOME/.config/openbox
 fi
 ln -sfn /usr/share/thinOS/src/openbox $HOME/.config/openbox
+
+# NOTE: devmon (auto-mount) should be started from the Openbox autostart file in the thinOS repo.
+# Ensure /usr/share/thinOS/src/openbox/autostart (or autostart.sh) contains:
+#   ( sleep 2 && /usr/local/bin/thinos-devmon ) &
 ln -sfn /usr/share/thinOS/src/.xinitrc $HOME/.xinitrc
 ln -sfn /usr/share/thinOS/src/.xinitrc $HOME/.xsession
 mkdir -p $HOME/.themes
@@ -202,6 +240,22 @@ if [ -f "$FILE" ]; then
     if ! grep -q "splash" "$FILE"; then
         sudo sed -i 's/$/ splash quiet plymouth.ignore-serial-consoles/' "$FILE"
     fi
+fi
+if [ "$DISTRO" == "debian" ]; then
+    log_step "10a" "Enabling splash and quiet mode via GRUB on Debian..."
+
+    # Only touch GRUB_CMDLINE_LINUX_DEFAULT line
+    if grep -q '^GRUB_CMDLINE_LINUX_DEFAULT=' /etc/default/grub; then
+        # Ensure 'quiet' is present
+        sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="\([^"]*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 quiet"/' /etc/default/grub
+
+        # Ensure 'splash' is present
+        sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="\([^"]*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 splash plymouth.ignore-serial-consoles net.ifnames=0 biosdevname=0"/' /etc/default/grub
+    else
+        echo 'GRUB_CMDLINE_LINUX_DEFAULT="quiet splash plymouth.ignore-serial-consoles"' | sudo tee -a /etc/default/grub
+    fi
+
+    sudo update-grub
 fi
 
 # Copy and set custom Plymouth theme
@@ -316,11 +370,31 @@ EOL"
     fi
 fi
 
-# Install necessary packages based on the distribution
-log_step 2 "Installing a ..."
+# Configure systemd-resolved and NetworkManager DNS integration
+log_step "14c" "Configuring systemd-resolved and NetworkManager DNS integration..."
 if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
-    sudo apt-get install -y openvpn-systemd-resolved || true
+    # Ensure required packages are installed
+    sudo apt-get install -y systemd-resolved network-manager openvpn-systemd-resolved || true
+
+    # Enable and start services
     sudo systemctl enable --now systemd-resolved || true
+    sudo systemctl enable --now NetworkManager || true
+
+    # Make /etc/resolv.conf use the systemd-resolved stub resolver
+    if [ -e /etc/resolv.conf ] || [ -L /etc/resolv.conf ]; then
+        sudo rm -f /etc/resolv.conf
+    fi
+    sudo ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+    # Tell NetworkManager to hand DNS to systemd-resolved
+    sudo mkdir -p /etc/NetworkManager/conf.d
+    sudo bash -c 'cat > /etc/NetworkManager/conf.d/10-dns-systemd-resolved.conf' << "EOF"
+[main]
+dns=systemd-resolved
+EOF
+
+    # Restart NetworkManager to apply DNS settings
+    sudo systemctl restart NetworkManager || true
 else
     echo "Unsupported distribution: $DISTRO"
     exit 1
