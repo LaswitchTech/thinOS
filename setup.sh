@@ -66,6 +66,18 @@ else
     exit 1
 fi
 
+# Ensure Debian has contrib, non-free, and non-free-firmware enabled (required for nvidia-driver)
+if [ "$DISTRO" == "debian" ]; then
+    log_step "1a" "Ensuring contrib, non-free, and non-free-firmware are enabled in sources.list..."
+
+    if [ -f /etc/apt/sources.list ]; then
+        sudo sed -i 's/^\s*deb\s\+\(.*\)\s\+main\s*$/deb \1 main contrib non-free non-free-firmware/' /etc/apt/sources.list
+    fi
+
+    # Update once the new components are present
+    sudo apt-get update
+fi
+
 # Install necessary packages based on the distribution
 log_step 2 "Installing a Minimal Desktop Environment, Git, Firefox, ImageMagick, and feh..."
 if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
@@ -79,10 +91,10 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y openbox || true
     sudo apt-get install -y udevil || true
     sudo apt-get install -y libnotify-bin || true
+    sudo apt-get install -y udisks2 || true
     sudo apt-get install -y exfatprogs || true
     sudo apt-get install -y ntfs-3g || true
     sudo apt-get install -y exfat-fuse || true
-    sudo apt-get install -y exfatprogs || true
     sudo apt-get install -y firefox-esr || true
     sudo apt-get install -y alsa-utils || true
     sudo apt-get install -y pulseaudio pavucontrol || true
@@ -100,6 +112,14 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y python3 || true
     sudo apt-get install -y python3-pyqt5 || true
     sudo apt-get install -y python3-pyqt5* || true
+    # if [ "$DISTRO" == "debian" ]; then
+    #     sudo apt-get install -y nvidia-driver || true
+    #     sudo apt-get install -y nvidia-tesla-470-driver || true
+    #     sudo apt-get install -y glx-alternative-nvidia || true
+    #     sudo apt-get install -y firmware-misc-nonfree || true
+    #     sudo apt-get install -y firmware-amd-graphics || true
+    #     sudo apt-get install -y xserver-xorg-video-nouveau || true
+    # fi
 else
     echo "Unsupported distribution: $DISTRO"
     exit 1
@@ -136,6 +156,13 @@ sudo chmod +x /usr/local/bin/thinos-devmon || true
 # Add user to plugdev group
 sudo usermod -aG plugdev "$USER" || true
 
+# Disable udisks2 automount (we use devmon/udevil instead to mount as the session user)
+sudo systemctl disable --now udisks2.service udisks2.socket 2>/dev/null || true
+sudo systemctl mask udisks2.service udisks2.socket 2>/dev/null || true
+
+# If a previous devmon system service exists, disable it (devmon should run in the user session)
+sudo systemctl disable --now devmon.service 2>/dev/null || true
+
 # Install or update the PyRDPConnect repository in /usr/share
 log_step 4 "Installing or updating the PyRDPConnect repository in /usr/share..."
 if [ -d "/usr/share/PyRDPConnect" ] && [ ! -f "/usr/share/PyRDPConnect/.gitmodules" ]; then
@@ -161,6 +188,10 @@ if [ -d $HOME/.config/openbox ]; then
     rm -r $HOME/.config/openbox
 fi
 ln -sfn /usr/share/thinOS/src/openbox $HOME/.config/openbox
+
+# NOTE: devmon (auto-mount) should be started from the Openbox autostart file in the thinOS repo.
+# Ensure /usr/share/thinOS/src/openbox/autostart (or autostart.sh) contains:
+#   ( sleep 2 && /usr/local/bin/thinos-devmon ) &
 ln -sfn /usr/share/thinOS/src/.xinitrc $HOME/.xinitrc
 ln -sfn /usr/share/thinOS/src/.xinitrc $HOME/.xsession
 mkdir -p $HOME/.themes

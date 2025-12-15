@@ -49,8 +49,9 @@ sudo apt install firmware-amd-graphics -y
 To enable NVIDIA GPU acceleration, install the following packages before running the installation script:
 
 ```bash
-sudo apt install nvidia-driver nvidia-xconfig -y
-sudo nvidia-xconfig
+sudo apt install nvidia-detect -y
+nvidia-detect
+sudo apt install nvidia-driver -y # or the recommended driver from nvidia-detect
 ```
 
 ### Tested On
