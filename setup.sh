@@ -66,12 +66,26 @@ else
     exit 1
 fi
 
-# Ensure Debian has contrib, non-free, and non-free-firmware enabled (required for nvidia-driver)
+# Ensure Debian has contrib + non-free enabled (required for many firmware/NVIDIA packages).
+# Note: Debian Bookworm commonly already includes "non-free-firmware" by default.
 if [ "$DISTRO" == "debian" ]; then
-    log_step "1a" "Ensuring contrib, non-free, and non-free-firmware are enabled in sources.list..."
+    log_step "1a" "Ensuring contrib and non-free are enabled in /etc/apt/sources.list..."
 
     if [ -f /etc/apt/sources.list ]; then
-        sudo sed -i 's/^\s*deb\s\+\(.*\)\s\+main\s*$/deb \1 main contrib non-free non-free-firmware/' /etc/apt/sources.list
+        # Only touch active repo lines (deb/deb-src), leave commented lines alone.
+        # 1) Ensure "contrib" exists in the components list
+        sudo sed -i -E '/^[[:space:]]*deb(-src)?[[:space:]]/ { /[[:space:]]contrib[[:space:]]/! s/[[:space:]]main[[:space:]]/ main contrib / }' /etc/apt/sources.list
+
+        # 2) Ensure "non-free" exists in the components list (distinct from non-free-firmware)
+        sudo sed -i -E '/^[[:space:]]*deb(-src)?[[:space:]]/ { /[[:space:]]non-free[[:space:]]/! s/[[:space:]]main[[:space:]]/ main non-free / }' /etc/apt/sources.list
+
+        # 3) If we added non-free in step (2) but contrib is present, normalize ordering to:
+        #    main contrib non-free (keeps non-free-firmware if already present)
+        sudo sed -i -E '/^[[:space:]]*deb(-src)?[[:space:]]/ s/[[:space:]]main[[:space:]]non-free[[:space:]]contrib[[:space:]]/ main contrib non-free /g' /etc/apt/sources.list
+        sudo sed -i -E '/^[[:space:]]*deb(-src)?[[:space:]]/ s/[[:space:]]main[[:space:]]contrib[[:space:]]/ main contrib /g' /etc/apt/sources.list
+
+        # 4) Ensure non-free-firmware exists (some installs may not have it)
+        sudo sed -i -E '/^[[:space:]]*deb(-src)?[[:space:]]/ { /[[:space:]]non-free-firmware([[:space:]]|$)/! s/$/ non-free-firmware/ }' /etc/apt/sources.list
     fi
 
     # Update once the new components are present
