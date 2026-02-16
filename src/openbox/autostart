@@ -5,25 +5,66 @@
 # - If only HDMI-1 is connected, explicitly turn HDMI-2 off to avoid a larger
 #   virtual framebuffer / overlapping desktop regions.
 
+# Log autostart output for debugging
+mkdir -p "$HOME/.cache" || true
+exec >>"$HOME/.cache/openbox-autostart.log" 2>&1
+echo "[autostart] $(date '+%Y-%m-%d %H:%M:%S') starting"
+
 # Give X a moment to bring outputs up (especially on Raspberry Pi)
-( sleep 1 \
-  && if xrandr | grep -q "^HDMI-2 connected"; then \
-       xrandr --output HDMI-1 --mode 1920x1080 --primary --pos 0x0 --rotate normal \
-              --output HDMI-2 --mode 1920x1080 --pos 1920x0 --rotate normal \
-              --fb 3840x1080; \
-     else \
-       xrandr --output HDMI-1 --mode 1920x1080 --primary --pos 0x0 --rotate normal \
-              --output HDMI-2 --off \
-              --fb 1920x1080; \
-     fi \
-  && xrdb -merge "$HOME/.Xdefaults" \
+(
+    sleep 1
+
+    # Resolve tool paths (PATH can be minimal under Openbox)
+    XRANDR="$(command -v xrandr || echo /usr/bin/xrandr)"
+    XRDB="$(command -v xrdb || echo /usr/bin/xrdb)"
+
+    echo "[autostart] XRANDR=$XRANDR"
+    "$XRANDR" --version || true
+    echo "[autostart] xrandr outputs:"
+    XR_OUT="$($XRANDR || true)"
+    echo "$XR_OUT"
+
+    # Always try to set HDMI-1 first (independent call), so a bad HDMI-2 EDID
+    # can't prevent HDMI-1 from switching to 1920x1080.
+    echo "[autostart] Setting HDMI-1 to 1920x1080"
+    "$XRANDR" --output HDMI-1 --mode 1920x1080 --primary --pos 0x0 --rotate normal || true
+
+    # Decide whether HDMI-2 is a real, usable second monitor.
+    # On some setups HDMI-2 can appear as 'connected' but only offers 1024x768
+    # (0mm x 0mm), which indicates missing/invalid EDID.
+    HDMI2_CONNECTED=0
+    echo "$XR_OUT" | grep -q "^HDMI-2 connected" && HDMI2_CONNECTED=1 || true
+
+    HDMI2_HAS_1080P=0
+    # Look for 1920x1080 in the HDMI-2 mode list (indented lines after HDMI-2 header)
+    echo "$XR_OUT" | awk '
+        /^HDMI-2 connected/{in2=1; next}
+        /^HDMI-/{in2=0}
+        in2{print}
+    ' | grep -q "1920x1080" && HDMI2_HAS_1080P=1 || true
+
+    if [ "$HDMI2_CONNECTED" -eq 1 ] && [ "$HDMI2_HAS_1080P" -eq 1 ]; then
+        echo "[autostart] HDMI-2 connected + has 1920x1080: extending to the right"
+        "$XRANDR" \
+            --output HDMI-2 --mode 1920x1080 --pos 1920x0 --rotate normal \
+            --fb 3840x1080 || true
+    else
+        echo "[autostart] HDMI-2 absent or missing 1920x1080: disabling HDMI-2 and forcing 1920x1080 fb"
+        "$XRANDR" --output HDMI-2 --off || true
+        "$XRANDR" --fb 1920x1080 || true
+    fi
+
+    echo "[autostart] Reloading Xresources from $HOME/.Xdefaults"
+    "$XRDB" -merge "$HOME/.Xdefaults" || true
+
+    echo "[autostart] $(date '+%Y-%m-%d %H:%M:%S') display config done"
 ) &
 
 # Set gradient background (after layout)
 ( sleep 2 && feh --bg-scale "$HOME/.config/thinOS/backgrounds/gradient.png" ) &
 
-# Autostart PyRDPConnect in full-screen mode
-python3 /usr/share/PyRDPConnect/src/main.py &
-
 # Start devmon for automount (with notifications)
-( sleep 2 && /usr/local/bin/thinos-devmon ) &
+( sleep 3 && /usr/local/bin/thinos-devmon ) &
+
+# Autostart PyRDPConnect in full-screen mode
+( sleep 4 && python3 /usr/share/PyRDPConnect/src/main.py ) &
