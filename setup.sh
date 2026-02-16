@@ -103,6 +103,7 @@ if [ "$DISTRO" == "raspbian" ] || [ "$DISTRO" == "debian" ]; then
     sudo apt-get install -y dnsutils || true
     sudo apt-get install -y lightdm || true
     sudo apt-get install -y openbox || true
+    sudo apt-get install -y x11-xserver-utils || true
     sudo apt-get install -y udevil || true
     sudo apt-get install -y libnotify-bin || true
     sudo apt-get install -y exfatprogs || true
@@ -168,11 +169,6 @@ sudo chmod +x /usr/local/bin/thinos-devmon || true
 
 # Add user to plugdev group
 sudo usermod -aG plugdev "$USER" || true
-
-#
-# # Remove udisks2 entirely to prevent it from auto-mounting optical media to /media/cdrom0
-# sudo apt-get purge -y udisks2 2>/dev/null || true
-# sudo apt-get autoremove -y 2>/dev/null || true
 
 # Disable udisks2 automount (we use devmon/udevil instead to mount as the session user)
 sudo systemctl disable --now udisks2.service udisks2.socket 2>/dev/null || true
@@ -251,8 +247,13 @@ EOL'
 log_step 10 "Disabling verbose boot and enabling Plymouth theme..."
 FILE=/boot/firmware/cmdline.txt
 if [ -f "$FILE" ]; then
+    # Append splash and quiet to the existing cmdline if not already present, while preserving existing parameters
     if ! grep -q "splash" "$FILE"; then
         sudo sed -i 's/$/ splash quiet plymouth.ignore-serial-consoles/' "$FILE"
+    fi
+    # prepend vc4.force_hotplug=3 to ensure HDMI is forced on for both ports on Raspberry Pi
+    if ! grep -q "vc4.force_hotplug=3" "$FILE"; then
+        sudo sed -i '1s/^/vc4.force_hotplug=3 /' "$FILE"
     fi
 fi
 if [ "$DISTRO" == "debian" ]; then
