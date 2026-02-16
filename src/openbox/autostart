@@ -1,9 +1,29 @@
-# Set screen resolution to 1920x1080 on both HDMI ports (for Raspberry Pi)
-xrandr --output HDMI-1 --mode 1920x1080 &
-xrandr --output HDMI-2 --mode 1920x1080 &
-# Set gradient background
-feh --bg-scale ~/.config/thinOS/backgrounds/gradient.png &
+# Openbox autostart (thinOS)
+#
+# Notes:
+# - Apply display layout first (without backgrounding), then reload X resources.
+# - If only HDMI-1 is connected, explicitly turn HDMI-2 off to avoid a larger
+#   virtual framebuffer / overlapping desktop regions.
+
+# Give X a moment to bring outputs up (especially on Raspberry Pi)
+( sleep 1 \
+  && if xrandr | grep -q "^HDMI-2 connected"; then \
+       xrandr --output HDMI-1 --mode 1920x1080 --primary --pos 0x0 --rotate normal \
+              --output HDMI-2 --mode 1920x1080 --pos 1920x0 --rotate normal \
+              --fb 3840x1080; \
+     else \
+       xrandr --output HDMI-1 --mode 1920x1080 --primary --pos 0x0 --rotate normal \
+              --output HDMI-2 --off \
+              --fb 1920x1080; \
+     fi \
+  && xrdb -merge "$HOME/.Xdefaults" \
+) &
+
+# Set gradient background (after layout)
+( sleep 2 && feh --bg-scale "$HOME/.config/thinOS/backgrounds/gradient.png" ) &
+
 # Autostart PyRDPConnect in full-screen mode
 python3 /usr/share/PyRDPConnect/src/main.py &
+
 # Start devmon for automount (with notifications)
 ( sleep 2 && /usr/local/bin/thinos-devmon ) &
