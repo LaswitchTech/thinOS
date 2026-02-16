@@ -1,5 +1,6 @@
 # Set screen resolution to 1920x1080 on both HDMI ports (for Raspberry Pi)
-xrandr --output HDMI-1 --mode 1920x1080 --output HDMI-2 --mode 1920x1080 &
+xrandr --output HDMI-1 --mode 1920x1080 &
+xrandr --output HDMI-2 --mode 1920x1080 &
 # Set gradient background
 feh --bg-scale ~/.config/thinOS/backgrounds/gradient.png &
 # Autostart PyRDPConnect in full-screen mode
